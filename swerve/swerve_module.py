@@ -1,6 +1,7 @@
 """Implements common logic for swerve modules.
 """
-from ctre.cantalon import CANTalon
+from ctre.talonsrx import TalonSRX
+from ctre._impl import FeedbackDevice, ControlMode  # note: _impl should probably be private  # noqa: E501
 import wpilib
 import math
 
@@ -37,14 +38,13 @@ class SwerveModule(object):
             drive_reversed (boolean): Whether or not the drive motor's output
                 is currently reversed.
         """
-        self.steer_talon = CANTalon(steer_id)
-        self.drive_talon = CANTalon(drive_id)
+        self.steer_talon = TalonSRX(steer_id)
+        self.drive_talon = TalonSRX(drive_id)
 
         # Configure steering motors to use abs. encoders
         # and closed-loop control
-        self.steer_talon.changeControlMode(CANTalon.ControlMode.Position)
-        self.steer_talon.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogEncoder)  # noqa: E501
-        self.steer_talon.setProfile(0)
+        self.steer_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0)  # noqa: E501
+        self.steer_talon.selectProfileSlot(0, 0)
 
         self.name = name
         self.steer_target = 0
@@ -61,7 +61,7 @@ class SwerveModule(object):
         The key names are derived from the name passed to the
         constructor.
         """
-        self.steer_talon.setProfile(0)
+        self.steer_talon.selectProfileSlot(0, 0)
 
         preferences = wpilib.Preferences.getInstance()
 
@@ -89,8 +89,6 @@ class SwerveModule(object):
             self.name+'-steer-reversed', False
         )
 
-        self.steer_talon.reverseOutput(self.steer_reversed)
-
     def save_config_values(self):
         """
         Save configuration values for this module via WPILib's
@@ -110,7 +108,7 @@ class SwerveModule(object):
         Get the current angular position of the swerve module in
         radians.
         """
-        native_units = self.steer_talon.get()
+        native_units = self.steer_talon.getSelectedSensorPosition()
         native_units -= self.steer_offset
 
         # Position in rotations
@@ -131,7 +129,7 @@ class SwerveModule(object):
                 where 0 points in the chassis forward direction.
         """
         n_rotations = math.trunc(
-            (self.steer_talon.get() - self.steer_offset)
+            (self.steer_talon.getSelectedSensorPosition() - self.steer_offset)
             / self.steer_range)
         current_angle = self.get_steer_angle()
         adjusted_target = angle_radians + (n_rotations * 2 * math.pi)
@@ -159,7 +157,7 @@ class SwerveModule(object):
 
         # Compute and send actual target to motor controller
         native_units = (self.steer_target * 512 / math.pi) + self.steer_offset
-        self.steer_talon.set(native_units)
+        self.steer_talon.set(ControlMode.Position, native_units)
 
         self.drive_temp_flipped = should_reverse_drive
 
@@ -179,7 +177,7 @@ class SwerveModule(object):
         if self.drive_temp_flipped:
             percent_speed *= -1
 
-        self.drive_talon.set(percent_speed)
+        self.drive_talon.set(ControlMode.PercentOutput, percent_speed)
 
     def apply_control_values(self, angle_radians, percent_speed):
         """
