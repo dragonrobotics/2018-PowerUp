@@ -4,7 +4,6 @@ and frame dimensions.
 """
 import wpilib
 
-
 # Teleop control constants. Can be loaded from Preferences.
 fwdAxis = 1  # Forward/Backward axis
 strAxis = 0  # Left/Right axis
@@ -15,7 +14,7 @@ strInv = True  # L/R axis inverted
 rcwInv = True  # Rot axis inverted
 
 
-# Wraps the preferences API to provide an alternative to all of the
+# Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
 def __load_preference(key, backup):
     prefs = wpilib.Preferences.getInstance()
@@ -30,11 +29,11 @@ def __load_preference(key, backup):
         getMethod = prefs.getBoolean
         putMethod = prefs.putBoolean
     elif isinstance(backup, int):
-        getMethod = prefs.getInt
-        putMethod = prefs.putInt
+        getMethod = lambda k, b: int(prefs.getInt(k, b))  # noqa: E731
+        putMethod = lambda k, v: prefs.putInt(k, int(v))  # noqa: E731
     elif isinstance(backup, float):
-        getMethod = prefs.getFloat
-        putMethod = prefs.putFloat
+        getMethod = lambda k, b: float(prefs.getFloat(k, b))  # noqa: E731
+        putMethod = lambda k, v: prefs.putFloat(k, float(v))  # noqa: E731
 
     if not prefs.containsKey(key):
         putMethod(key, backup)
@@ -51,13 +50,13 @@ def load_control_config():
     """
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv
 
-    fwdAxis = int(__load_preference('Control: Forward-Backward Axis', backup=1))  # noqa: E501
+    fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
 
-    strAxis = int(__load_preference('Control: Left-Right Axis', backup=0))
+    strAxis = __load_preference('Control: Left-Right Axis', backup=0)
     strInv = __load_preference('Control: L-R Axis Inverted', backup=True)
 
-    rcwAxis = int(__load_preference('Control: Rotation Axis', backup=4))
+    rcwAxis = __load_preference('Control: Rotation Axis', backup=4)
     rcwInv = __load_preference('Control: Rot Axis Inverted', backup=True)
 
 
