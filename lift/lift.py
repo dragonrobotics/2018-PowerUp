@@ -19,7 +19,7 @@ class RD4BLift:
 
     # Length for one segment of the arm. As of the time this comment
     # was written a segment is 30 inches long.
-    self.ARM_LENGTH = 30
+    ARM_LENGTH = 30
 
     def __init__(self, left_id, right_id):
         """
@@ -57,9 +57,10 @@ class RD4BLift:
 
         This function loads/reloads configuration values from Preferences.
         The necessary keys that need to be defined are:
-            - "lift potentiometer horizontal angle"
-            - "lift potentiometer base angle"
-            - "lift limit up"
+
+        - "lift potentiometer horizontal angle"
+        - "lift potentiometer base angle"
+        - "lift limit up"
 
         This function also precalculates values that are used throughout the code
         and sets soft limits for the motor based on encoder values.

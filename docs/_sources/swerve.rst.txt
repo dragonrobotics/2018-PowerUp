@@ -1,0 +1,30 @@
+swerve package
+==============
+
+Submodules
+----------
+
+swerve\.swerve\_drive module
+----------------------------
+
+.. automodule:: swerve.swerve_drive
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+swerve\.swerve\_module module
+-----------------------------
+
+.. automodule:: swerve.swerve_module
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: swerve
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -4,16 +4,17 @@ Code for the claw subsystem
 
 This file contains code for the claw, which is implemented as a finite-state
 automaton with these states:
-    - neutral: the claw is fully open and not in action.
-    - closing: the claw is transitioning from the "neutral" state to the
-               "closed" state.
-    - closed: the claw is in the closed position, but still exerting light
-              pressure to maintain grip on the cube.
-    - opening: the claw is transitioning from the "closed" state to the
-               "neutral" state.
-    - manual_ctrl: a disconnected state from the other four; used when the
-                   driver wants full control over the claw without assistance
-                   from the state automaton.
+
+- neutral: the claw is fully open and not in action.
+- closing: the claw is transitioning from the "neutral" state to the
+    "closed" state.
+- closed: the claw is in the closed position, but still exerting light
+    pressure to maintain grip on the cube.
+- opening: the claw is transitioning from the "closed" state to the
+    "neutral" state.
+- manual_ctrl: a disconnected state from the other four; used when the
+    driver wants full control over the claw without assistance
+    from the state automaton.
 
 @author Brandon Gong, Sebastian Mobo
 @version 0.0.1
