@@ -157,8 +157,10 @@
 <span class="sd">        angle the motor needs to run to and apply it. The angle is calculated</span>
 <span class="sd">        by this equation:</span>
 
-<span class="sd">            final angle = arcsin(delta height / (2 * arm length) + sin(initial</span>
-<span class="sd">            angle))</span>
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\theta _f = \\sin^{-1}(\\frac{\\Delta H}{2 l_{arm}}</span>
+<span class="sd">            + \\sin(\\theta_i))</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inches: the height in inches to move the RD4B to.</span>
@@ -184,8 +186,9 @@
 <span class="sd">        This function will get the angle of the RD4B from the encoder and</span>
 <span class="sd">        convert this to a height given this equation:</span>
 
-<span class="sd">            delta height = 2 * arm length * (sin(final angle) - sin(initial</span>
-<span class="sd">            angle))</span>
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\Delta H = 2 l_{arm} (\\sin(\\theta_f) - \\sin(\\theta_i))</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The height of the RD4B at the time this function is called.</span>
@@ -275,7 +278,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

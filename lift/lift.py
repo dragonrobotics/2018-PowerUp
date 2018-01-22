@@ -115,8 +115,10 @@ class RD4BLift:
         angle the motor needs to run to and apply it. The angle is calculated
         by this equation:
 
-            final angle = arcsin(delta height / (2 * arm length) + sin(initial
-            angle))
+        .. math::
+
+            \\theta _f = \\sin^{-1}(\\frac{\\Delta H}{2 l_{arm}}
+            + \\sin(\\theta_i))
 
         Args:
             inches: the height in inches to move the RD4B to.
@@ -142,8 +144,9 @@ class RD4BLift:
         This function will get the angle of the RD4B from the encoder and
         convert this to a height given this equation:
 
-            delta height = 2 * arm length * (sin(final angle) - sin(initial
-            angle))
+        .. math::
+
+            \\Delta H = 2 l_{arm} (\\sin(\\theta_f) - \\sin(\\theta_i))
 
         Returns:
             The height of the RD4B at the time this function is called.
