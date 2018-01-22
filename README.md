@@ -14,4 +14,5 @@ I2C ultrasonic sensor.
 make sure the code works as intended before pushing it to the robot.
 - The `vision` folder contains vision code for the robot.
 
-All code should be well commented and documented.
+All code should be well commented and documented. The HTML documentation can
+be found at https://dragonrobotics.github.io/2018-PowerUp.
