@@ -1,0 +1,30 @@
+lift package
+============
+
+Submodules
+----------
+
+lift\.claw module
+-----------------
+
+.. automodule:: lift.claw
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+lift\.lift module
+-----------------
+
+.. automodule:: lift.lift
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: lift
+    :members:
+    :undoc-members:
+    :show-inheritance:

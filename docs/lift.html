@@ -1,0 +1,325 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>lift package &#8212; 2018-PowerUp  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="physics module" href="physics.html" />
+    <link rel="prev" title="constants module" href="constants.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="lift-package">
+<h1>lift package<a class="headerlink" href="#lift-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-lift.claw">
+<span id="lift-claw-module"></span><h2>lift.claw module<a class="headerlink" href="#module-lift.claw" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file claw.py
+Code for the claw subsystem</p>
+<p>This file contains code for the claw, which is implemented as a finite-state
+automaton with these states:</p>
+<ul class="simple">
+<li>neutral: the claw is fully open and not in action.</li>
+<li><dl class="first docutils">
+<dt>closing: the claw is transitioning from the “neutral” state to the</dt>
+<dd>“closed” state.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>closed: the claw is in the closed position, but still exerting light</dt>
+<dd>pressure to maintain grip on the cube.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>opening: the claw is transitioning from the “closed” state to the</dt>
+<dd>“neutral” state.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>manual_ctrl: a disconnected state from the other four; used when the</dt>
+<dd>driver wants full control over the claw without assistance
+from the state automaton.</dd>
+</dl>
+</li>
+</ul>
+<p>&#64;author Brandon Gong, Sebastian Mobo
+&#64;version 0.0.1
+&#64;date January 19, 2018</p>
+<dl class="class">
+<dt id="lift.claw.Claw">
+<em class="property">class </em><code class="descclassname">lift.claw.</code><code class="descname">Claw</code><span class="sig-paren">(</span><em>talon_id</em>, <em>contact_sensor_channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="attribute">
+<dt id="lift.claw.Claw.claw_open_time">
+<code class="descname">claw_open_time</code><em class="property"> = 0.5</em><a class="headerlink" href="#lift.claw.Claw.claw_open_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lift.claw.Claw.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the claw.</p>
+<p>This function does a quick check to make sure it is a valid state change
+before actually changing the state to “closing”.
+For example you cannot set the state to “closing” if the claw is already
+gripping the cube.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.claw.Claw.open">
+<code class="descname">open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the claw.</p>
+<p>The idea of checking the state change is similar to that of the close()
+function, but it also resets the opening start time.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.claw.Claw.toggle">
+<code class="descname">toggle</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw.toggle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw.toggle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggle the claw state.
+If the claw is closed, open it, and if the claw is opened, close it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.claw.Claw.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>The update function is called periodically and progresses the state
+machine.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lift.lift">
+<span id="lift-lift-module"></span><h2>lift.lift module<a class="headerlink" href="#module-lift.lift" title="Permalink to this headline">¶</a></h2>
+<p>&#64;file lift.py
+Code for the RD4B subsystem</p>
+<p>This file contains code for the RD4B lift subsystem, including helper functions
+to make working with the lift easier from both autonomous and teleop control
+modes.  It also has functionality for reading config values from Preferences.</p>
+<p>&#64;author Brandon Gong
+&#64;version 0.0.1
+&#64;date January 19, 2018</p>
+<dl class="class">
+<dt id="lift.lift.RD4BLift">
+<em class="property">class </em><code class="descclassname">lift.lift.</code><code class="descname">RD4BLift</code><span class="sig-paren">(</span><em>left_id</em>, <em>right_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="attribute">
+<dt id="lift.lift.RD4BLift.ARM_LENGTH">
+<code class="descname">ARM_LENGTH</code><em class="property"> = 30</em><a class="headerlink" href="#lift.lift.RD4BLift.ARM_LENGTH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.fully_extend">
+<code class="descname">fully_extend</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.fully_extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.fully_extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully extend the RD4B upward.
+This function runs the motor to the LIMIT_UP position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.fully_retract">
+<code class="descname">fully_retract</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.fully_retract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.fully_retract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully retract the RD4B to the lowest position.
+This function runs the motor to the initial_angle position.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.getHeight">
+<code class="descname">getHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.getHeight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.getHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the height of the RD4B.</p>
+<p>This function will get the angle of the RD4B from the encoder and
+convert this to a height given this equation:</p>
+<blockquote>
+<div>delta height = 2 * arm length * (sin(final angle) - sin(initial
+angle))</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The height of the RD4B at the time this function is called.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.isMovementFinished">
+<code class="descname">isMovementFinished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.isMovementFinished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.isMovementFinished" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the RD4B is in motion.</p>
+<p>This function gets the closed loop error, which will be very small if
+the motor is not currently in motion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the RD4B is not in motion
+False if the RD4B is currently still in motion.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.load_config_values">
+<code class="descname">load_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.load_config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.load_config_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal helper function for configuration values.</p>
+<p>This function loads/reloads configuration values from Preferences.
+The necessary keys that need to be defined are:</p>
+<ul class="simple">
+<li>“lift potentiometer horizontal angle”</li>
+<li>“lift potentiometer base angle”</li>
+<li>“lift limit up”</li>
+</ul>
+<p>This function also precalculates values that are used throughout the code
+and sets soft limits for the motor based on encoder values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.set_height">
+<code class="descname">set_height</code><span class="sig-paren">(</span><em>inches</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.set_height"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.set_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the height for the RD4B lift.</p>
+<p>Given a height to move to in inches, this function will calculate the
+angle the motor needs to run to and apply it. The angle is calculated
+by this equation:</p>
+<blockquote>
+<div>final angle = arcsin(delta height / (2 * arm length) + sin(initial
+angle))</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inches</strong> – the height in inches to move the RD4B to.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="lift.lift.RD4BLift.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the RD4B, no matter what position it is in currently.</p>
+<p>This can be used as an emergency stop in the case of an encoder
+breaking, but it can also be used for general purposes if needed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-lift">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-lift" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">2018-PowerUp</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="autonomous.html">autonomous module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">lift package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-lift.claw">lift.claw module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-lift.lift">lift.lift module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-lift">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="physics.html">physics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sensors.html">sensors package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="swerve.html">swerve package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleop.html">teleop module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vision.html">vision package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">2018-PowerUp</a><ul>
+      <li>Previous: <a href="constants.html" title="previous chapter">constants module</a></li>
+      <li>Next: <a href="physics.html" title="next chapter">physics module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dragon Robotics.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/lift.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
