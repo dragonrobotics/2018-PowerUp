@@ -43,6 +43,7 @@
             
   <div class="section" id="module-robot">
 <span id="robot-module"></span><h1>robot module<a class="headerlink" href="#module-robot" title="Permalink to this headline">¶</a></h1>
+<p>The entry point for all robot code.</p>
 <dl class="class">
 <dt id="robot.Robot">
 <em class="property">class </em><code class="descclassname">robot.</code><code class="descname">Robot</code><a class="reference internal" href="_modules/robot.html#Robot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot" title="Permalink to this definition">¶</a></dt>
@@ -50,37 +51,69 @@
 <dl class="method">
 <dt id="robot.Robot.autonomousInit">
 <code class="descname">autonomousInit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.autonomousInit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.autonomousInit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called once when entering Autonomous mode.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.autonomousPeriodic">
 <code class="descname">autonomousPeriodic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.autonomousPeriodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.autonomousPeriodic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called periodically when in Autonomous mode.</p>
+<p>To be specific, this function is called whenever a new packet has been
+received from the Driver Station.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This function <strong>must not</strong> block the robot program for more than
+a few milliseconds at a time. Blocking will cause all sorts of
+problems with the robot and may leave it unresponsive.</p>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.disabledInit">
 <code class="descname">disabledInit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.disabledInit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.disabledInit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called once whenever the robot is disabled.</p>
+<p>This can’t, and probably shouldn’t, do much. It could be helpful to
+reload robot configuration values here (from Preferences, for instance)
+for testing purposes.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.disabledPeriodic">
 <code class="descname">disabledPeriodic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.disabledPeriodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.disabledPeriodic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called periodically whenever the robot is disabled.</p>
+<p>To be specific, this function is called whenever a new packet has been
+received from the Driver Station.</p>
+<p>This probably shouldn’t do much other than update SmartDashboard.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.robotInit">
 <code class="descname">robotInit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.robotInit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.robotInit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Perform initialization on robot startup.</p>
+<p>This function is called when the robot code starts after being powered
+on; at this point everything within WPILib / NetworkTables / etc.
+has been initialized.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.teleopInit">
 <code class="descname">teleopInit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.teleopInit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.teleopInit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called once when entering Teleop mode.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="robot.Robot.teleopPeriodic">
 <code class="descname">teleopPeriodic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/robot.html#Robot.teleopPeriodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#robot.Robot.teleopPeriodic" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called periodically when in Teleop mode.</p>
+<p>To be specific, this function is called whenever a new packet has been
+received from the Driver Station.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This function <strong>must not</strong> block the robot program for more than
+a few milliseconds at a time. Blocking will cause all sorts of
+problems with the robot and may leave it unresponsive.</p>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -92,6 +125,9 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
 <h1 class="logo"><a href="index.html">2018-PowerUp</a></h1>
 
 
@@ -147,7 +183,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

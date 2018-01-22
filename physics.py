@@ -2,17 +2,17 @@ import math
 import constants
 
 
-def talon_target(hal_data, talon_id):
+def _talon_target(hal_data, talon_id):
     hal_target = hal_data['CAN'][talon_id]['value']
     return hal_target
 
 
-def copy_talon_analog_pos(hal_data, talon_id):
+def _copy_talon_analog_pos(hal_data, talon_id):
     hal_data['CAN'][talon_id]['analog_in_position'] = hal_data['CAN'][talon_id]['value']  # noqa:E501
 
 
 # pulled from master branch on pyfrc; remove when latest version actually works
-def four_motor_swerve_drivetrain(
+def _four_motor_swerve_drivetrain(
     lr_motor, rr_motor, lf_motor, rf_motor,
     lr_angle, rr_angle, lf_angle, rf_angle,
     x_wheelbase=2, y_wheelbase=2, speed=5
@@ -67,25 +67,30 @@ def four_motor_swerve_drivetrain(
 
 
 class PhysicsEngine(object):
+    """
+    Implements physics support for robot simulations.
+
+    Currently only simulates the drivetrain.
+    """
     def __init__(self, physics_controller):
         self.physics_controller = physics_controller
 
     def update_sim(self, hal_data, now, tm_diff):
         module_speeds = [
-            talon_target(hal_data, constants.swerve_config[1][2]) / 1024,
-            talon_target(hal_data, constants.swerve_config[0][2]) / 1024,
-            talon_target(hal_data, constants.swerve_config[3][2]) / 1024,
-            talon_target(hal_data, constants.swerve_config[2][2]) / 1024
+            _talon_target(hal_data, constants.swerve_config[1][2]) / 1024,
+            _talon_target(hal_data, constants.swerve_config[0][2]) / 1024,
+            _talon_target(hal_data, constants.swerve_config[3][2]) / 1024,
+            _talon_target(hal_data, constants.swerve_config[2][2]) / 1024
         ]
 
         module_angles = [
-            talon_target(hal_data, constants.swerve_config[1][1]) * 180 / 512,
-            talon_target(hal_data, constants.swerve_config[0][1]) * 180 / 512,
-            talon_target(hal_data, constants.swerve_config[3][1]) * 180 / 512,
-            talon_target(hal_data, constants.swerve_config[2][1]) * 180 / 512,
+            _talon_target(hal_data, constants.swerve_config[1][1]) * 180 / 512,
+            _talon_target(hal_data, constants.swerve_config[0][1]) * 180 / 512,
+            _talon_target(hal_data, constants.swerve_config[3][1]) * 180 / 512,
+            _talon_target(hal_data, constants.swerve_config[2][1]) * 180 / 512,
         ]
 
-        vx, vy, vw = four_motor_swerve_drivetrain(
+        vx, vy, vw = _four_motor_swerve_drivetrain(
             *module_speeds,
             *module_angles,
             constants.chassis_length / 12,
@@ -95,7 +100,7 @@ class PhysicsEngine(object):
 
         self.physics_controller.vector_drive(vx, vy, vw, tm_diff)
 
-        copy_talon_analog_pos(hal_data, constants.swerve_config[0][1])
-        copy_talon_analog_pos(hal_data, constants.swerve_config[1][1])
-        copy_talon_analog_pos(hal_data, constants.swerve_config[2][1])
-        copy_talon_analog_pos(hal_data, constants.swerve_config[3][1])
+        _copy_talon_analog_pos(hal_data, constants.swerve_config[0][1])
+        _copy_talon_analog_pos(hal_data, constants.swerve_config[1][1])
+        _copy_talon_analog_pos(hal_data, constants.swerve_config[2][1])
+        _copy_talon_analog_pos(hal_data, constants.swerve_config[3][1])

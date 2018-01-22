@@ -50,6 +50,10 @@
 <div class="viewcode-block" id="drive"><a class="viewcode-back" href="../teleop.html#teleop.drive">[docs]</a><span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="n">control_stick</span><span class="p">,</span> <span class="n">drivetrain</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Drive the robot directly using a joystick.</span>
+
+<span class="sd">    This function grabs inputs from a joystick, applies axis inversion and</span>
+<span class="sd">    deadbanding, and from there passes the control inputs on to</span>
+<span class="sd">    :func:`swerve.swerve_drive.SwerveDrive.drive`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ctrl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
         <span class="n">control_stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">fwdAxis</span><span class="p">),</span>
@@ -85,6 +89,9 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
 <h1 class="logo"><a href="../index.html">2018-PowerUp</a></h1>
 
 
@@ -127,7 +134,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

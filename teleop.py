@@ -8,6 +8,10 @@ import constants
 def drive(control_stick, drivetrain):
     """
     Drive the robot directly using a joystick.
+
+    This function grabs inputs from a joystick, applies axis inversion and
+    deadbanding, and from there passes the control inputs on to
+    :func:`swerve.swerve_drive.SwerveDrive.drive`.
     """
     ctrl = np.array([
         control_stick.getRawAxis(constants.fwdAxis),
