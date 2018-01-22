@@ -10,6 +10,8 @@ such:
 for manipulating cubes.
 - The `sensors` folder contains code for interfacing with sensors, such as the
 I2C ultrasonic sensor.
+- The `swerve` folder contains code for the swerve drive, including code to
+operate each module and also calculations.
 - The `tests` folder contains tests for our code, including simulation tests to
 make sure the code works as intended before pushing it to the robot.
 - The `vision` folder contains vision code for the robot.
