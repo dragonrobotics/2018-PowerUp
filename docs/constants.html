@@ -45,6 +45,72 @@
 <span id="constants-module"></span><h1>constants module<a class="headerlink" href="#module-constants" title="Permalink to this headline">¶</a></h1>
 <p>Contains constants relating to robot configuration; for example, Talon CAN IDs
 and frame dimensions.</p>
+<p>Many of these attributes are loaded from NetworkTables and the SmartDashboard
+via the Robot Preferences API in WPILib.</p>
+<dl class="attribute">
+<dt id="constants.fwdAxis">
+<code class="descclassname">constants.</code><code class="descname">fwdAxis</code><a class="headerlink" href="#constants.fwdAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – The controller axis to use for forward/backward driving in
+Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.strAxis">
+<code class="descclassname">constants.</code><code class="descname">strAxis</code><a class="headerlink" href="#constants.strAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – The controller axis to use for left/right driving in
+Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.rcwAxis">
+<code class="descclassname">constants.</code><code class="descname">rcwAxis</code><a class="headerlink" href="#constants.rcwAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – The controller axis to use for rotation control in Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.fwdInv">
+<code class="descclassname">constants.</code><code class="descname">fwdInv</code><a class="headerlink" href="#constants.fwdInv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> – Whether or not the forward/backward control axis should be
+inverted in Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.strInv">
+<code class="descclassname">constants.</code><code class="descname">strInv</code><a class="headerlink" href="#constants.strInv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> – Whether or not the left/right control axis should be
+inverted in Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.rcwInv">
+<code class="descclassname">constants.</code><code class="descname">rcwInv</code><a class="headerlink" href="#constants.rcwInv" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> – Whether or not the rotation control axis should be inverted
+in Teleop.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.swerve_config">
+<code class="descclassname">constants.</code><code class="descname">swerve_config</code><a class="headerlink" href="#constants.swerve_config" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em> – A list containing configurations for each module
+within the swerve drive.
+Each tuple takes the form <code class="docutils literal"><span class="pre">('module</span> <span class="pre">name',</span> <span class="pre">steer_id,</span> <span class="pre">drive_id)</span></code>.
+See also <a class="reference internal" href="swerve.html#module-swerve.swerve_drive" title="swerve.swerve_drive"><code class="xref py py-mod docutils literal"><span class="pre">swerve.swerve_drive</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.chassis_length">
+<code class="descclassname">constants.</code><code class="descname">chassis_length</code><a class="headerlink" href="#constants.chassis_length" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – The distance between the left and right sides
+of the robot frame. The exact choice of units</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="constants.chassis_width">
+<code class="descclassname">constants.</code><code class="descname">chassis_width</code><a class="headerlink" href="#constants.chassis_width" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – The distance between the front and back sides of
+the robot frame.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="constants.load_control_config">
 <code class="descclassname">constants.</code><code class="descname">load_control_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/constants.html#load_control_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#constants.load_control_config" title="Permalink to this definition">¶</a></dt>
@@ -61,6 +127,9 @@ WPILib before they have been initialized).</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
 <h1 class="logo"><a href="index.html">2018-PowerUp</a></h1>
 
 
@@ -116,7 +185,7 @@ WPILib before they have been initialized).</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

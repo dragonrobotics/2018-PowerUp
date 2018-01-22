@@ -1,6 +1,38 @@
 """
 Contains constants relating to robot configuration; for example, Talon CAN IDs
 and frame dimensions.
+
+Many of these attributes are loaded from NetworkTables and the SmartDashboard
+via the Robot Preferences API in WPILib.
+
+Attributes:
+    fwdAxis (int): The controller axis to use for forward/backward driving in
+        Teleop.
+
+    strAxis (int): The controller axis to use for left/right driving in
+        Teleop.
+
+    rcwAxis (int): The controller axis to use for rotation control in Teleop.
+
+    fwdInv (bool): Whether or not the forward/backward control axis should be
+        inverted in Teleop.
+
+    strInv (bool): Whether or not the left/right control axis should be
+        inverted in Teleop.
+
+    rcwInv (bool): Whether or not the rotation control axis should be inverted
+        in Teleop.
+
+    swerve_config (list): A list containing configurations for each module
+        within the swerve drive.
+        Each tuple takes the form ``('module name', steer_id, drive_id)``.
+        See also :mod:`swerve.swerve_drive`.
+
+    chassis_length (float): The distance between the left and right sides
+        of the robot frame. The exact choice of units
+
+    chassis_width (float): The distance between the front and back sides of
+        the robot frame.
 """
 import wpilib
 

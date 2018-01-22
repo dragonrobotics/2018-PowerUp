@@ -122,6 +122,8 @@ html_sidebars = {
     ]
 }
 
+html_logo = '../logo.png'
+
 
 # -- Options for HTMLHelp output ------------------------------------------
 
