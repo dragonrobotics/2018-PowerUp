@@ -17,6 +17,9 @@ class Autonomous:
         ds = wpilib.DriverStation.getInstance()
         field_string = ds.getGameSpecificMessage()
 
+        if field_string == "":  # this only happens during tests
+            field_string = 'LLL'
+
         self.close_switch = field_string[0]
         self.scale = field_string[1]
         self.far_switch = field_string[2]

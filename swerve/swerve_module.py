@@ -108,7 +108,7 @@ class SwerveModule(object):
         Get the current angular position of the swerve module in
         radians.
         """
-        native_units = self.steer_talon.getSelectedSensorPosition()
+        native_units = self.steer_talon.getSelectedSensorPosition(0)
         native_units -= self.steer_offset
 
         # Position in rotations
@@ -124,13 +124,13 @@ class SwerveModule(object):
         steering angle; thus, it may in actuality servo to the
         position opposite the passed angle and reverse the drive
         direction.
-        
+
         Args:
             angle_radians (number): The angle to steer towards in radians,
                 where 0 points in the chassis forward direction.
         """
         n_rotations = math.trunc(
-            (self.steer_talon.getSelectedSensorPosition() - self.steer_offset)
+            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
             / self.steer_range)
         current_angle = self.get_steer_angle()
         adjusted_target = angle_radians + (n_rotations * 2 * math.pi)
@@ -206,7 +206,7 @@ class SwerveModule(object):
         """
         wpilib.SmartDashboard.putNumber(
             self.name+' Position',
-            (self.steer_talon.get() - self.steer_offset) * 180 / 512)
+            (self.steer_talon.getAnalogIn() - self.steer_offset) * 180 / 512)
 
         wpilib.SmartDashboard.putNumber(
             self.name+' ADC', self.steer_talon.getAnalogInRaw())
@@ -217,4 +217,4 @@ class SwerveModule(object):
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Steer Error',
-            self.steer_talon.getClosedLoopError())
+            self.steer_talon.getClosedLoopError(0))
