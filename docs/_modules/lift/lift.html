@@ -1,0 +1,287 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>lift.lift &#8212; 2018-PowerUp  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for lift.lift</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">@file lift.py</span>
+<span class="sd">Code for the RD4B subsystem</span>
+
+<span class="sd">This file contains code for the RD4B lift subsystem, including helper functions</span>
+<span class="sd">to make working with the lift easier from both autonomous and teleop control</span>
+<span class="sd">modes.  It also has functionality for reading config values from Preferences.</span>
+
+<span class="sd">@author Brandon Gong</span>
+<span class="sd">@version 0.0.1</span>
+<span class="sd">@date January 19, 2018</span>
+<span class="sd"> &quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">ctre.cantalon</span> <span class="k">import</span> <span class="n">CANTalon</span>
+<span class="kn">import</span> <span class="nn">wpilib</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<div class="viewcode-block" id="RD4BLift"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift">[docs]</a><span class="k">class</span> <span class="nc">RD4BLift</span><span class="p">:</span>
+
+    <span class="c1"># Length for one segment of the arm. As of the time this comment</span>
+    <span class="c1"># was written a segment is 30 inches long.</span>
+    <span class="n">ARM_LENGTH</span> <span class="o">=</span> <span class="mi">30</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left_id</span><span class="p">,</span> <span class="n">right_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new instance of the RD4B lift.</span>
+
+<span class="sd">        Calling this constructor initializes the two drive motors and configures</span>
+<span class="sd">        their control modes, and also loads the configuration values from</span>
+<span class="sd">        preferences.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            left_id: the ID number of the left talon.</span>
+<span class="sd">            right_id: the ID number of the right talon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create new instances of CANTalon for the left and right motors.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span> <span class="o">=</span> <span class="n">CANTalon</span><span class="p">(</span><span class="n">left_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_motor</span> <span class="o">=</span> <span class="n">CANTalon</span><span class="p">(</span><span class="n">right_id</span><span class="p">)</span>
+
+        <span class="c1"># The right motor will follow the left motor, so we will configure</span>
+        <span class="c1"># the left motor as Position control mode, and have the right motor</span>
+        <span class="c1"># follow it.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">setFeedbackDevice</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">FeedbackDevice</span><span class="o">.</span><span class="n">AnalogPot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">setProfile</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Follower</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">left_id</span><span class="p">)</span>
+
+        <span class="c1"># finally, load the configuration values.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_config_values</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RD4BLift.load_config_values"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.load_config_values">[docs]</a>    <span class="k">def</span> <span class="nf">load_config_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal helper function for configuration values.</span>
+
+<span class="sd">        This function loads/reloads configuration values from Preferences.</span>
+<span class="sd">        The necessary keys that need to be defined are:</span>
+
+<span class="sd">        - &quot;lift potentiometer horizontal angle&quot;</span>
+<span class="sd">        - &quot;lift potentiometer base angle&quot;</span>
+<span class="sd">        - &quot;lift limit up&quot;</span>
+
+<span class="sd">        This function also precalculates values that are used throughout the code</span>
+<span class="sd">        and sets soft limits for the motor based on encoder values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the preferences instance.</span>
+        <span class="n">preferences</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+
+        <span class="c1"># get the encoder value when the bars are horizontal and form right</span>
+        <span class="c1"># angles.  This is used for calculations.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_ANGLE</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s2">&quot;lift potentiometer horizontal angle&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get the encoder value when the RD4B is in the fully down position.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_angle</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s2">&quot;lift potentiometer base angle&quot;</span><span class="p">)</span>
+
+        <span class="c1"># pre-convert the initial angle to radians and take the sin of the</span>
+        <span class="c1"># angle.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">INITIAL_ANGLE_RADIANS_SIN</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_angle</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_ANGLE</span><span class="p">)</span> <span class="o">/</span> <span class="mi">512</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="c1"># get the upper limit of the encoder, or the encoder value when the</span>
+        <span class="c1"># RD4B is fully extended upward.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LIMIT_UP</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s2">&quot;lift limit up&quot;</span><span class="p">)</span>
+
+        <span class="c1"># set the soft limits to LIMIT_UP and the initial angle. the motors</span>
+        <span class="c1"># should not go outside of this range.</span>
+        <span class="n">left_motor</span><span class="o">.</span><span class="n">setForwardSoftLimit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LIMIT_UP</span><span class="p">)</span>
+        <span class="n">left_motor</span><span class="o">.</span><span class="n">setReverseSoftLimit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_angle</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RD4BLift.fully_extend"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.fully_extend">[docs]</a>    <span class="k">def</span> <span class="nf">fully_extend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fully extend the RD4B upward.</span>
+<span class="sd">        This function runs the motor to the LIMIT_UP position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LIMIT_UP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RD4BLift.fully_retract"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.fully_retract">[docs]</a>    <span class="k">def</span> <span class="nf">fully_retract</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fully retract the RD4B to the lowest position.</span>
+<span class="sd">        This function runs the motor to the initial_angle position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_angle</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RD4BLift.set_height"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.set_height">[docs]</a>    <span class="k">def</span> <span class="nf">set_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inches</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the height for the RD4B lift.</span>
+
+<span class="sd">        Given a height to move to in inches, this function will calculate the</span>
+<span class="sd">        angle the motor needs to run to and apply it. The angle is calculated</span>
+<span class="sd">        by this equation:</span>
+
+<span class="sd">            final angle = arcsin(delta height / (2 * arm length) + sin(initial</span>
+<span class="sd">            angle))</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inches: the height in inches to move the RD4B to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">)</span>
+
+        <span class="c1"># calculate the final angle as per the equation given above.</span>
+        <span class="n">final_angle_radians</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
+            <span class="n">inches</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ARM_LENGTH</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">INITIAL_ANGLE_RADIANS_SIN</span><span class="p">)</span>
+
+        <span class="c1"># convert this final angle from radians to native units.</span>
+        <span class="n">native_units</span> <span class="o">=</span> <span class="p">((</span><span class="n">final_angle_radians</span> <span class="o">*</span> <span class="mi">512</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_ANGLE</span><span class="p">)</span>
+
+        <span class="c1"># set the left motor to run to this position (the right motor will</span>
+        <span class="c1"># follow it)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">native_units</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RD4BLift.getHeight"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.getHeight">[docs]</a>    <span class="k">def</span> <span class="nf">getHeight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the height of the RD4B.</span>
+
+<span class="sd">        This function will get the angle of the RD4B from the encoder and</span>
+<span class="sd">        convert this to a height given this equation:</span>
+
+<span class="sd">            delta height = 2 * arm length * (sin(final angle) - sin(initial</span>
+<span class="sd">            angle))</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The height of the RD4B at the time this function is called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the final angle from the encoder, and convert to radians.</span>
+        <span class="n">final_angle_radians</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">HORIZONTAL_ANGLE</span><span class="p">)</span>
+            <span class="o">*</span> <span class="mi">512</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="c1"># calculate the height of the RD4B using the final angle and based on</span>
+        <span class="c1"># the given equation.</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ARM_LENGTH</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">final_angle_radians</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">INITIAL_ANGLE_RADIANS_SIN</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">height</span></div>
+
+<div class="viewcode-block" id="RD4BLift.isMovementFinished"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.isMovementFinished">[docs]</a>    <span class="k">def</span> <span class="nf">isMovementFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the RD4B is in motion.</span>
+
+<span class="sd">        This function gets the closed loop error, which will be very small if</span>
+<span class="sd">        the motor is not currently in motion.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the RD4B is not in motion</span>
+<span class="sd">            False if the RD4B is currently still in motion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">getClosedLoopError</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">10</span></div>
+
+<div class="viewcode-block" id="RD4BLift.stop"><a class="viewcode-back" href="../../lift.html#lift.lift.RD4BLift.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the RD4B, no matter what position it is in currently.</span>
+
+<span class="sd">        This can be used as an emergency stop in the case of an encoder</span>
+<span class="sd">        breaking, but it can also be used for general purposes if needed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># change the control mode to percent vbus and then set the speed to 0.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVBus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">2018-PowerUp</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">2018-PowerUp</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dragon Robotics.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

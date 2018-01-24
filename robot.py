@@ -2,11 +2,21 @@ import wpilib
 import constants
 import swerve
 import teleop
+from autonomous import Autonomous
 
 
 class Robot(wpilib.IterativeRobot):
     def robotInit(self):
         constants.load_control_config()
+
+        self.autoPositionSelect = wpilib.SendableChooser()
+        self.autoPositionSelect.addDefault('Middle', 'Middle')
+        self.autoPositionSelect.addObject('Left', 'Left')
+        self.autoPositionSelect.addObject('Right', 'Right')
+
+        wpilib.SmartDashboard.putData(
+            'Robot Starting Position',
+            self.autoPositionSelect)
 
         self.control_stick = wpilib.Joystick(0)
         self.drivetrain = swerve.SwerveDrive(
@@ -26,6 +36,7 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousInit(self):
         self.drivetrain.load_config_values()
+        self.auto = Autonomous(self.autoPositionSelect.getSelected())
 
     def autonomousPeriodic(self):
         pass

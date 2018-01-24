@@ -6,3 +6,6 @@ wpilib
 pyfrc
 numpy
 flake8
+pygame
+sphinx
+sphinxcontrib-fulltoc

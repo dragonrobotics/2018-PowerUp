@@ -1,0 +1,7 @@
+autonomous module
+=================
+
+.. automodule:: autonomous
+    :members:
+    :undoc-members:
+    :show-inheritance:

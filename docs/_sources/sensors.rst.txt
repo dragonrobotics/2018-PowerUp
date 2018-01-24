@@ -1,0 +1,30 @@
+sensors package
+===============
+
+Submodules
+----------
+
+sensors\.sensorconstants module
+-------------------------------
+
+.. automodule:: sensors.sensorconstants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sensors\.ultrasonic module
+--------------------------
+
+.. automodule:: sensors.ultrasonic
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: sensors
+    :members:
+    :undoc-members:
+    :show-inheritance:

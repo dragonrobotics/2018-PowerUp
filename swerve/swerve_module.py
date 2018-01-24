@@ -124,6 +124,7 @@ class SwerveModule(object):
         steering angle; thus, it may in actuality servo to the
         position opposite the passed angle and reverse the drive
         direction.
+        
         Args:
             angle_radians (number): The angle to steer towards in radians,
                 where 0 points in the chassis forward direction.

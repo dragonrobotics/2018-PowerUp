@@ -5,7 +5,7 @@ install:
 - pip install -r requirements.txt
 script:
 - python robot.py test
-- flake8 --exclude=tests/
+- flake8 --exclude=tests/,doc-source/conf.py
 notifications:
   slack:
     secure: Iyge3CRuNd/OVqzelLLhVFdGLX6hHMoH8awRMlSlePJg57MCdlvVPe7RLwc3/RPJl7AsBDCVcORryuzWxqYDx9h4ngB/Nn67MkORJ+QItlp9vruMOpCTeDGNmQaFuu5QBgnyTh/Ctf3auR9MRbSHiaO/43EZFQAyzqZm553/h7w/W+khQqQL9P5ha1uD/fhDXARzKEXo+gYntl8MJJXzFBP72q2wsMpCaA6X7Vw2CtvZrL50sKoUMpYBKcgvzg874TlaUwvH8hXc2iokHWEtTWJ3z8tO6aomGsyjdUpytw1cDW9zW18HpGfppSezOaWwk6pmf8+u3f5cT72kLstirV/M3xBFdUFASAk4Wz5v4t6U7xx2BuN3DPoV4PQQCoOlZk1UfU6xKmH+IedYVSbxDQnzpGKj03HT/0Qg3UuohB6YetQ9Y/dNz3Yzl7wKJ8ZcdR2DRJGcz0EKrHlo+gmhw8hk1A4ORA/Fs2Qb/WI4lS1KEvDGdCdFFLLdMPPEY1R2JkgR7xU+eMzP5aT5MK68fO9cErbMnsGrGj2/PhtaOjeRJ/sLiIx2zpAzE7pivHTksUtOraTdutlFLS5EOWjhTws6ReXCg6mfKSeJ5f3K8iXEYF5K8OFzjL9WdGR2o588P8mZBoXSU36XTHyzIyh6LZgRbd6SQes0WmaSkhsT/9s=

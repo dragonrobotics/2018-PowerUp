@@ -1,5 +1,5 @@
 """ collection of functions used to manage autonomous control """
-from vision.visionmaster import VisionMaster
+# from vision.visionmaster import VisionMaster
 import wpilib
 
 
@@ -10,10 +10,9 @@ class Autonomous:
     MIDDLE = 2
     RIGHT = 3
 
-    def __init__(self, robot_location, field_string):
-        self.robot_location = robot_location  # TODO: get this from dashboard
-        self.field_string = field_string
-        self.vision = VisionMaster('0.0.0.0', 2)  # TODO: put addr in constants
+    def __init__(self, robot_location):
+        self.robot_location = robot_location  # set on SmartDashboard
+        # self.vision = VisionMaster('0.0.0.0', 2)
 
         ds = wpilib.DriverStation.getInstance()
         field_string = ds.getGameSpecificMessage()
@@ -23,6 +22,22 @@ class Autonomous:
         self.far_switch = field_string[2]
 
         self.target = None
+
+        if self.robot_location == 'Middle':
+            if self.close_switch == 'L':
+                pass  # We are in middle and switch is on left.
+            else:
+                pass  # We are in middle and switch is on right.
+        elif self.robot_location == 'Left':
+            if self.close_switch == 'L':
+                pass # We are on left and switch is on left.
+            else:
+                pass # We are on left and switch is on right.
+        elif self.robot_location == 'Right':
+            if self.close_switch == 'L':
+                pass # We are on right and switch is on left.
+            else:
+                pass # We are on right and switch is on right.
 
     def target(self):
         """
