@@ -198,7 +198,7 @@ class SwerveModule(object):
 
         self.drive_talon.setSensorPhase(False)
         self.drive_talon.selectProfileSlot(1, 0)
-        # Could also set F gain here, when it works in test
+        self.drive_talon.config_kF(0, 1023 / self.max_speed, 0)
 
         if direct:
             self.drive_talon.set(ControlMode.Velocity, speed)
