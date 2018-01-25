@@ -70,6 +70,16 @@ swerve_config = [
     ('Front Left', 5, 13),
 ]
 
+# Lift motor contorller CAN IDs. Currently dummy values.
+lift_ids = {
+    'left': 20,
+    'right': 21
+}
+
+# Claw motor contorller CAN ID(s).
+claw_id = 22
+claw_contact_sensor_channel = 1
+
 # Both are in inches, but exact units don't matter
 # (as long as both use the same units)
 chassis_length = 32
