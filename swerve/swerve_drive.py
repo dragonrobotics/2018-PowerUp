@@ -4,7 +4,7 @@ Implements a full swerve drive.
 import wpilib
 import math
 import numpy as np
-from swerve_module import SwerveModule
+from .swerve_module import SwerveModule
 
 
 class SwerveDrive(object):

@@ -156,4 +156,4 @@ class Autonomous:
         Updates and progresses the autonomous state machine.
         """
         # Call function corresponding to current state.
-        self.state_table[self.state]()
+        self.state_table[self.state](self)

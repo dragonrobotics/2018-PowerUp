@@ -50,7 +50,7 @@ class Robot(wpilib.IterativeRobot):
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
 
     def autonomousPeriodic(self):
-        pass
+        self.auto.periodic()
 
     def teleopInit(self):
         self.drivetrain.load_config_values()
