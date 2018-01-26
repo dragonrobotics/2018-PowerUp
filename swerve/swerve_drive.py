@@ -4,7 +4,7 @@ Implements a full swerve drive.
 import wpilib
 import math
 import numpy as np
-from .swerve_module import SwerveModule
+from swerve_module import SwerveModule
 
 
 class SwerveDrive(object):
@@ -57,7 +57,7 @@ class SwerveDrive(object):
         self.sd_update_timer = wpilib.Timer()
         self.sd_update_timer.start()
 
-    def drive(self, forward, strafe, rotate_cw):
+    def drive(self, forward, strafe, rotate_cw, max_wheel_speed=370):
         """
         Compute and apply module angles and speeds to achieve a given
         linear / angular velocity.
@@ -141,12 +141,9 @@ class SwerveDrive(object):
 
     def get_module_distances(self):
         return [
-            abs(module.drive_talon.getEncPosition())
+            abs(module.drive_talon.getQuadraturePosition())
             for module in self.modules
         ]
-
-    def get_module_angles(self):
-        return [module.get_steer_angle() for module in self.modules]
 
     def reset_drive_position(self):
         for module in self.modules:
@@ -172,3 +169,12 @@ class SwerveDrive(object):
         """
         for module in self.modules:
             module.update_smart_dashboard()
+
+        overall_max_speed = np.amin(np.abs(
+            [module.max_observed_speed for module in self.modules]
+        ))
+
+        wpilib.SmartDashboard.putNumber(
+            'Overall Max Observed Speed',
+            overall_max_speed
+        )

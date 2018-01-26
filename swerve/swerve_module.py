@@ -5,11 +5,14 @@ import numpy as np
 import wpilib
 import math
 
-FeedbackDevice = TalonSRX.FeedbackDevice
 ControlMode = TalonSRX.ControlMode
+FeedbackDevice = TalonSRX.FeedbackDevice
+
 
 # Set to true to add safety margin to steer ranges
 _apply_range_hack = False
+_acceptable_steer_err_degrees = 1  # degrees
+_acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 
 
 class SwerveModule(object):
@@ -45,18 +48,14 @@ class SwerveModule(object):
 
         # Configure steering motors to use abs. encoders
         # and closed-loop control
-        self.steer_talon.configSelectedFeedbackSensor(
-            FeedbackDevice.Analog,
-            0, 0
-        )
+        self.steer_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0)  # noqa: E501
         self.steer_talon.selectProfileSlot(0, 0)
-
-        self.drive_talon.configSelectedFeedbackSensor(
-            FeedbackDevice.QuadEncoder,
-            0, 0
+        self.steer_talon.configAllowableClosedloopError(
+            0, math.ceil(_acceptable_steer_err), 0
         )
 
-        self.drive_talon.setSelectedSensorPosition(0, 0, 0)
+        self.drive_talon.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0)  # noqa: E501
+        self.drive_talon.setQuadraturePosition(0, 0)
 
         self.name = name
         self.steer_target = 0
@@ -80,7 +79,10 @@ class SwerveModule(object):
 
         preferences = wpilib.Preferences.getInstance()
 
-        self.max_speed = preferences.getFloat('Max Speed', 470)
+        self.max_speed = preferences.getFloat(
+            self.name+'-Max Wheel Speed',
+            370
+        )
 
         self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
         if _apply_range_hack:
@@ -141,7 +143,6 @@ class SwerveModule(object):
         steering angle; thus, it may in actuality servo to the
         position opposite the passed angle and reverse the drive
         direction.
-
         Args:
             angle_radians (number): The angle to steer towards in radians,
                 where 0 points in the chassis forward direction.
@@ -217,7 +218,7 @@ class SwerveModule(object):
         self.drive_talon.set(ControlMode.Position, ticks)
 
     def reset_drive_position(self):
-        self.drive_talon.setSelectedSensorPosition(0, 0, 0)
+        self.drive_talon.setQuadraturePosition(0, 0)
 
     def apply_control_values(self, angle_radians, percent_speed):
         """
@@ -245,7 +246,9 @@ class SwerveModule(object):
         """
         wpilib.SmartDashboard.putNumber(
             self.name+' Position',
-            (self.steer_talon.getAnalogIn() - self.steer_offset) * 180 / 512)
+            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
+            * 180 / 512
+        )
 
         wpilib.SmartDashboard.putNumber(
             self.name+' ADC', self.steer_talon.getAnalogInRaw())
@@ -270,17 +273,23 @@ class SwerveModule(object):
         if len(self.raw_drive_speeds) > 50:
             self.raw_drive_speeds = self.raw_drive_speeds[-50:]
 
-        cur_drive_spd = np.mean(self.raw_drive_speeds)
+        self.cur_drive_spd = np.mean(self.raw_drive_speeds)
 
-        if abs(cur_drive_spd) > abs(self.max_observed_speed):
-            self.max_observed_speed = cur_drive_spd
+        if abs(self.cur_drive_spd) > abs(self.max_observed_speed):
+            self.max_observed_speed = self.cur_drive_spd
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Drive Velocity',
-            cur_drive_spd
+            self.cur_drive_spd
         )
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Drive Velocity (Max)',
             self.max_observed_speed
         )
+
+        if wpilib.RobotBase.isReal():
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Drive Percent Output',
+                self.drive_talon.getMotorOutputPercent()
+            )
