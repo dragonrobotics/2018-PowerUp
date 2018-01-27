@@ -6,6 +6,7 @@ from pyfrc.physics.drivetrains import four_motor_swerve_drivetrain
 _talon_vel_conv = (10 * 4 * math.pi) / (80 * 6.67 * 12)
 _max_speed = 370  # in talon native units
 
+
 def talon_target(hal_data, talon_id):
     hal_target = hal_data['CAN'][talon_id]['value']
     return hal_target
