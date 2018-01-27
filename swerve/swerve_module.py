@@ -220,19 +220,23 @@ class SwerveModule(object):
     def reset_drive_position(self):
         self.drive_talon.setQuadraturePosition(0, 0)
 
-    def apply_control_values(self, angle_radians, percent_speed):
+    def apply_control_values(self, angle_radians, speed, direct=False):
         """
         Set a steering angle and a drive speed simultaneously.
 
         Args:
             angle_radians (number): The desired angle to steer towards.
-            percent_speed (number): The desired percentage speed to drive at.
+            speed (number): The desired speed to drive at.
+            direct (boolean): If True, then ``speed`` will be interpreted
+                directly as a speed (in talon native velocity units) to drive
+                at. Otherwise ``speed`` will be interpreted as a maximum
+                percentage of the module's maximum speed to drive at.
 
         See Also:
             :func:`~set_drive_speed` and :func:`~set_steer_angle`
         """
         self.set_steer_angle(angle_radians)
-        self.set_drive_speed(percent_speed)
+        self.set_drive_speed(speed, direct)
 
     def update_smart_dashboard(self):
         """
