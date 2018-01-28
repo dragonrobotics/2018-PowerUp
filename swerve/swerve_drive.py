@@ -142,12 +142,20 @@ class SwerveDrive(object):
     def get_module_distances(self):
         return [
             abs(module.drive_talon.getQuadraturePosition())
+            * (4 * math.pi)
+            / (80 * 6.67)
             for module in self.modules
         ]
 
-    def reset_drive_position(self):
+    def rezero_distance(self):
         for module in self.modules:
             module.reset_drive_position()
+
+    def get_closed_loop_error(self):
+        return [
+            module.steer_talon.getClosedLoopError(0)
+            for module in self.modules
+        ]
 
     def save_config_values(self):
         """

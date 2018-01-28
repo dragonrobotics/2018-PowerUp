@@ -50,6 +50,7 @@ class Robot(wpilib.IterativeRobot):
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
 
     def autonomousPeriodic(self):
+        self.auto.update_smart_dashboard()
         self.auto.periodic()
 
     def teleopInit(self):
