@@ -53,28 +53,16 @@ Code for the claw subsystem</p>
 <p>This file contains code for the claw, which is implemented as a finite-state
 automaton with these states:</p>
 <ul class="simple">
-<li>neutral: the claw is fully open and not in action.</li>
-<li><dl class="first docutils">
-<dt>closing: the claw is transitioning from the “neutral” state to the</dt>
-<dd>“closed” state.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>closed: the claw is in the closed position, but still exerting light</dt>
-<dd>pressure to maintain grip on the cube.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>opening: the claw is transitioning from the “closed” state to the</dt>
-<dd>“neutral” state.</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>manual_ctrl: a disconnected state from the other four; used when the</dt>
-<dd>driver wants full control over the claw without assistance
-from the state automaton.</dd>
-</dl>
-</li>
+<li><code class="docutils literal"><span class="pre">neutral</span></code>: the claw is fully open and not in action.</li>
+<li><code class="docutils literal"><span class="pre">closing</span></code>: the claw is transitioning from the “neutral” state to the “closed”
+state.</li>
+<li><code class="docutils literal"><span class="pre">closed</span></code>: the claw is in the closed position, but still exerting light
+pressure to maintain grip on the cube.</li>
+<li><code class="docutils literal"><span class="pre">opening</span></code>: the claw is transitioning from the “closed” state to the
+“neutral” state.</li>
+<li><code class="docutils literal"><span class="pre">manual_ctrl</span></code>: a disconnected state from the other four; used when the
+driver wants full control over the claw without assistance
+from the state automaton.</li>
 </ul>
 <p>&#64;author Brandon Gong, Sebastian Mobo
 &#64;version 0.0.1
@@ -162,9 +150,8 @@ This function runs the motor to the initial_angle position.</p>
 <dd><p>Get the height of the RD4B.</p>
 <p>This function will get the angle of the RD4B from the encoder and
 convert this to a height given this equation:</p>
-<blockquote>
-<div>delta height = 2 * arm length * (sin(final angle) - sin(initial
-angle))</div></blockquote>
+<div class="math">
+\[\Delta H = 2 l_{arm} (\sin(\theta_f) - \sin(\theta_i))\]</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -214,9 +201,9 @@ and sets soft limits for the motor based on encoder values.</p>
 <p>Given a height to move to in inches, this function will calculate the
 angle the motor needs to run to and apply it. The angle is calculated
 by this equation:</p>
-<blockquote>
-<div>final angle = arcsin(delta height / (2 * arm length) + sin(initial
-angle))</div></blockquote>
+<div class="math">
+\[\theta _f = \sin^{-1}(\frac{\Delta H}{2 l_{arm}}
++ \sin(\theta_i))\]</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -310,7 +297,7 @@ breaking, but it can also be used for general purposes if needed.</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

@@ -1,6 +1,7 @@
 import wpilib
 import constants
 import swerve
+import lift
 import teleop
 from autonomous import Autonomous
 
@@ -25,6 +26,16 @@ class Robot(wpilib.IterativeRobot):
             constants.swerve_config
         )
 
+        self.lift = lift.RD4BLift(
+            constants.lift_ids['left'],
+            constants.lift_ids['right']
+        )
+
+        self.claw = lift.Claw(
+            constants.claw_id,
+            constants.claw_contact_sensor_channel
+        )
+
     def disabledInit(self):
         # We don't really _need_ to reload configuration in
         # every init call-- it's just useful for debugging.
@@ -36,10 +47,11 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousInit(self):
         self.drivetrain.load_config_values()
-        self.auto = Autonomous(self.autoPositionSelect.getSelected())
+        self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
 
     def autonomousPeriodic(self):
-        pass
+        self.auto.update_smart_dashboard()
+        self.auto.periodic()
 
     def teleopInit(self):
         self.drivetrain.load_config_values()

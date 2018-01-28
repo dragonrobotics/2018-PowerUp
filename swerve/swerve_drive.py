@@ -57,7 +57,7 @@ class SwerveDrive(object):
         self.sd_update_timer = wpilib.Timer()
         self.sd_update_timer.start()
 
-    def drive(self, forward, strafe, rotate_cw):
+    def drive(self, forward, strafe, rotate_cw, max_wheel_speed=370):
         """
         Compute and apply module angles and speeds to achieve a given
         linear / angular velocity.
@@ -89,7 +89,72 @@ class SwerveDrive(object):
 
         # back-right, back-left, front-right, front-left?
         for module, angle, speed in zip(self.modules, angles, speeds):
-            module.apply_control_values(angle, speed)
+            module.apply_control_values(angle, speed * max_wheel_speed, True)
+
+    def turn_to_angle(self, navx, target_angle):
+        hdg = navx.getFusedHeading() * (math.pi / 180)
+
+        prefs = wpilib.Preferences.getInstance()
+        if prefs.getBoolean('Reverse Heading Direction', False):
+            hdg *= -1
+
+        if math.degrees(abs(hdg - target_angle)) < 5:
+            for module in self.modules:
+                module.set_drive_speed(0, True)
+            return
+
+        a = -1 * (self.length / self.radius)
+        b = (self.length / self.radius)
+        c = -1 * (self.width / self.radius)
+        d = (self.width / self.radius)
+
+        t1 = np.array([a, a, b, b])
+        t2 = np.array([d, c, d, c])
+
+        angles = np.arctan2(t1, t2)
+
+        drv_spd = self.max_speed / 4
+
+        if hdg < target_angle:
+            drv_spd *= -1
+
+        for module, angle in zip(self.modules, angles):
+            module.set_steer_angle(angle)
+            module.set_drive_speed(drv_spd, True)
+
+    def set_all_module_angles(self, angle_rad):
+        for module in self.modules:
+            module.set_steer_angle(angle_rad)
+
+    def set_all_module_speeds(self, speed, direct=False):
+        for module in self.modules:
+            module.set_drive_speed(speed, direct)
+
+    def set_all_module_dist_ticks(self, dist_ticks):
+        for module in self.modules:
+            module.set_drive_distance(dist_ticks)
+
+    def drive_angle_distance(self, angle_rad, dist_ticks):
+        for module in self.modules:
+            module.set_steer_angle(angle_rad)
+            module.set_drive_distance(dist_ticks)
+
+    def get_module_distances(self):
+        return [
+            abs(module.drive_talon.getQuadraturePosition()) * (4 * math.pi) / (80 * 6.67)
+            for module in self.modules
+        ]
+
+    def rezero_distance(self):
+        for module in self.modules:
+            module.drive_talon.setQuadraturePosition(0, 0)
+
+    def get_closed_loop_error(self):
+        return [module.steer_talon.getClosedLoopError(0) for module in self.modules]
+
+    def reset_drive_position(self):
+        for module in self.modules:
+            module.reset_drive_position()
 
     def save_config_values(self):
         """
@@ -111,3 +176,12 @@ class SwerveDrive(object):
         """
         for module in self.modules:
             module.update_smart_dashboard()
+
+        overall_max_speed = np.amin(np.abs(
+            [module.max_observed_speed for module in self.modules]
+        ))
+
+        wpilib.SmartDashboard.putNumber(
+            'Overall Max Observed Speed',
+            overall_max_speed
+        )

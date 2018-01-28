@@ -1,12 +1,18 @@
 """Implements common logic for swerve modules.
 """
-from ctre.cantalon import CANTalon
+from ctre.talonsrx import TalonSRX
+import numpy as np
 import wpilib
 import math
+
+ControlMode = TalonSRX.ControlMode
+FeedbackDevice = TalonSRX.FeedbackDevice
 
 
 # Set to true to add safety margin to steer ranges
 _apply_range_hack = False
+_acceptable_steer_err_degrees = 1  # degrees
+_acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 
 
 class SwerveModule(object):
@@ -37,19 +43,27 @@ class SwerveModule(object):
             drive_reversed (boolean): Whether or not the drive motor's output
                 is currently reversed.
         """
-        self.steer_talon = CANTalon(steer_id)
-        self.drive_talon = CANTalon(drive_id)
+        self.steer_talon = TalonSRX(steer_id)
+        self.drive_talon = TalonSRX(drive_id)
 
         # Configure steering motors to use abs. encoders
         # and closed-loop control
-        self.steer_talon.changeControlMode(CANTalon.ControlMode.Position)
-        self.steer_talon.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogEncoder)  # noqa: E501
-        self.steer_talon.setProfile(0)
+        self.steer_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0)  # noqa: E501
+        self.steer_talon.selectProfileSlot(0, 0)
+        self.steer_talon.configAllowableClosedloopError(
+            0, math.ceil(_acceptable_steer_err), 0
+        )
+
+        self.drive_talon.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0)  # noqa: E501
+        self.drive_talon.setQuadraturePosition(0, 0)
 
         self.name = name
         self.steer_target = 0
         self.steer_target_native = 0
         self.drive_temp_flipped = False
+        self.max_speed = 470  # ticks / 100ms
+        self.max_observed_speed = 0
+        self.raw_drive_speeds = []
 
         self.load_config_values()
 
@@ -61,9 +75,14 @@ class SwerveModule(object):
         The key names are derived from the name passed to the
         constructor.
         """
-        self.steer_talon.setProfile(0)
+        self.steer_talon.selectProfileSlot(0, 0)
 
         preferences = wpilib.Preferences.getInstance()
+
+        self.max_speed = preferences.getFloat(
+            self.name+'-Max Wheel Speed',
+            370
+        )
 
         self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
         if _apply_range_hack:
@@ -89,8 +108,6 @@ class SwerveModule(object):
             self.name+'-steer-reversed', False
         )
 
-        self.steer_talon.reverseOutput(self.steer_reversed)
-
     def save_config_values(self):
         """
         Save configuration values for this module via WPILib's
@@ -110,7 +127,7 @@ class SwerveModule(object):
         Get the current angular position of the swerve module in
         radians.
         """
-        native_units = self.steer_talon.get()
+        native_units = self.steer_talon.getSelectedSensorPosition(0)
         native_units -= self.steer_offset
 
         # Position in rotations
@@ -126,14 +143,14 @@ class SwerveModule(object):
         steering angle; thus, it may in actuality servo to the
         position opposite the passed angle and reverse the drive
         direction.
-        
         Args:
             angle_radians (number): The angle to steer towards in radians,
                 where 0 points in the chassis forward direction.
         """
         n_rotations = math.trunc(
-            (self.steer_talon.get() - self.steer_offset)
-            / self.steer_range)
+            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
+            / self.steer_range
+        )
         current_angle = self.get_steer_angle()
         adjusted_target = angle_radians + (n_rotations * 2 * math.pi)
 
@@ -160,11 +177,11 @@ class SwerveModule(object):
 
         # Compute and send actual target to motor controller
         native_units = (self.steer_target * 512 / math.pi) + self.steer_offset
-        self.steer_talon.set(native_units)
+        self.steer_talon.set(ControlMode.Position, native_units)
 
         self.drive_temp_flipped = should_reverse_drive
 
-    def set_drive_speed(self, percent_speed):
+    def set_drive_speed(self, speed, direct=False):
         """
         Drive the swerve module wheels at a given percentage of
         maximum power or speed.
@@ -175,26 +192,51 @@ class SwerveModule(object):
                 reverse.
         """
         if self.drive_reversed:
-            percent_speed *= -1
+            speed *= -1
 
         if self.drive_temp_flipped:
-            percent_speed *= -1
+            speed *= -1
 
-        self.drive_talon.set(percent_speed)
+        self.drive_talon.setSensorPhase(False)
+        self.drive_talon.selectProfileSlot(1, 0)
+        self.drive_talon.config_kF(0, 1023 / self.max_speed, 0)
 
-    def apply_control_values(self, angle_radians, percent_speed):
+        if direct:
+            self.drive_talon.set(ControlMode.Velocity, speed)
+        else:
+            self.drive_talon.set(ControlMode.Velocity, speed * self.max_speed)
+
+    def set_drive_distance(self, ticks):
+        if self.drive_reversed:
+            ticks *= -1
+
+        if self.drive_temp_flipped:
+            ticks *= -1
+
+        self.drive_talon.setSensorPhase(False)
+        self.drive_talon.selectProfileSlot(0, 0)
+        self.drive_talon.set(ControlMode.Position, ticks)
+
+    def reset_drive_position(self):
+        self.drive_talon.setQuadraturePosition(0, 0)
+
+    def apply_control_values(self, angle_radians, speed, direct=False):
         """
         Set a steering angle and a drive speed simultaneously.
 
         Args:
             angle_radians (number): The desired angle to steer towards.
-            percent_speed (number): The desired percentage speed to drive at.
+            speed (number): The desired speed to drive at.
+            direct (boolean): If True, then ``speed`` will be interpreted
+                directly as a speed (in talon native velocity units) to drive
+                at. Otherwise ``speed`` will be interpreted as a maximum
+                percentage of the module's maximum speed to drive at.
 
         See Also:
             :func:`~set_drive_speed` and :func:`~set_steer_angle`
         """
         self.set_steer_angle(angle_radians)
-        self.set_drive_speed(percent_speed)
+        self.set_drive_speed(speed, direct)
 
     def update_smart_dashboard(self):
         """
@@ -208,7 +250,9 @@ class SwerveModule(object):
         """
         wpilib.SmartDashboard.putNumber(
             self.name+' Position',
-            (self.steer_talon.get() - self.steer_offset) * 180 / 512)
+            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
+            * 180 / 512
+        )
 
         wpilib.SmartDashboard.putNumber(
             self.name+' ADC', self.steer_talon.getAnalogInRaw())
@@ -219,4 +263,37 @@ class SwerveModule(object):
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Steer Error',
-            self.steer_talon.getClosedLoopError())
+            self.steer_talon.getClosedLoopError(0))
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Error',
+            self.drive_talon.getClosedLoopError(0))
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Ticks',
+            self.drive_talon.getQuadraturePosition())
+
+        self.raw_drive_speeds.append(self.drive_talon.getQuadratureVelocity())
+        if len(self.raw_drive_speeds) > 50:
+            self.raw_drive_speeds = self.raw_drive_speeds[-50:]
+
+        self.cur_drive_spd = np.mean(self.raw_drive_speeds)
+
+        if abs(self.cur_drive_spd) > abs(self.max_observed_speed):
+            self.max_observed_speed = self.cur_drive_spd
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Velocity',
+            self.cur_drive_spd
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Velocity (Max)',
+            self.max_observed_speed
+        )
+
+        if wpilib.RobotBase.isReal():
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Drive Percent Output',
+                self.drive_talon.getMotorOutputPercent()
+            )
