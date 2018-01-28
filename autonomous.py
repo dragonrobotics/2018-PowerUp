@@ -3,6 +3,7 @@
 import math
 import wpilib
 import numpy as np
+from collections import deque
 
 
 class Autonomous:
@@ -10,7 +11,7 @@ class Autonomous:
     drive_dist_tolerance = 3  # inches
     lift_height_tolerance = 2  # inches
 
-    drive_speed = 200  # talon native units / 100ms
+    drive_speed = 100  # talon native units / 100ms
 
     init_lift_height = 6  # inches above ground for initialization
 
@@ -32,11 +33,20 @@ class Autonomous:
         self.target_height = 36  # inches-- set this according to target
         self.final_drive_dist = 6  # inches
 
-        self.waypoints = []
+        self.waypoints = [
+            np.array([-40, -40]),
+            np.array([-20, 10]),
+            np.array([20, 0]),
+            np.array([40, -10]),
+            np.array([0, 0]),
+            np.array([40, 40]),
+            np.array([30, 30])
+        ]
         self.current_pos = np.array([0, 0])
         self.active_waypoint_idx = 0
 
-        self.state = 'init'
+        self.state = 'turn'
+        self.__angle_err_window = deque([], 30)
 
         if self.robot_location == 'Middle':
             if self.close_switch == 'L':
@@ -53,6 +63,8 @@ class Autonomous:
                 pass  # We are on right and switch is on left.
             else:
                 pass  # We are on right and switch is on right.
+
+        self.robot.drivetrain.rezero_distance()
 
     def state_init(self):
         self.robot.claw.close()  # put claw into 'closing' state
@@ -71,12 +83,24 @@ class Autonomous:
 
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
+        self.robot.drivetrain.set_all_module_speeds(0, direct=True)
 
-        cur_angles = np.array(self.robot.drivetrain.get_module_angles())
+        cur_error = np.array(
+            self.robot.drivetrain.get_closed_loop_error(),
+            dtype=np.float64
+        )
 
-        max_err = np.amax(np.abs(tgt_angle - cur_angles))
+        cur_error *= 180 / 512
 
-        if math.degrees(max_err) < self.turn_angle_tolerance:
+        max_err = np.amax(np.abs(cur_error))
+        self.__angle_err_window.append(max_err)
+        avg_max_err = np.mean(self.__angle_err_window)
+
+        if (
+            len(self.__angle_err_window) >= self.__angle_err_window.maxlen / 2
+            and avg_max_err < self.turn_angle_tolerance
+        ):
+            self.robot.drivetrain.rezero_distance()
             self.state = 'drive'
 
     def state_drive(self):
@@ -93,8 +117,11 @@ class Autonomous:
         if abs(avg_dist - dist) <= self.drive_dist_tolerance:
             # do we have waypoints left to drive to?
             self.active_waypoint_idx += 1
+            self.current_pos = active_waypoint
 
             if self.active_waypoint_idx < len(self.waypoints):
+                self.__angle_err_window.clear()
+                self.robot.drivetrain.rezero_distance()
                 self.state = 'turn'
             else:
                 self.state = 'lift'
@@ -155,5 +182,16 @@ class Autonomous:
         """
         Updates and progresses the autonomous state machine.
         """
-        # Call function corresponding to current state.
-        self.state_table[self.state](self)
+        # TODO: Only run autonomous if in Drive or Turn states;
+        # this is for testing purposes only.
+        if self.state == "drive" or self.state == "turn":
+            # Call function corresponding to current state.
+            self.state_table[self.state](self)
+        else:
+            self.robot.drivetrain.set_all_module_speeds(0, direct=True)
+
+    def update_smart_dashboard(self):
+        wpilib.SmartDashboard.putString(
+            'autonomous state',
+            self.state
+        )
