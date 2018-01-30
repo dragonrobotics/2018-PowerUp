@@ -1,11 +1,41 @@
 """ collection of functions used to manage autonomous control """
-# from vision.visionmaster import VisionMaster
 import math
 import wpilib
 import numpy as np
 
 
 class Autonomous:
+
+    # Put the waypoints here.
+    # Each path is represented in this form:
+    # "name of path": [list of waypoints (tuples of coordinates in inches)]
+    # The name of the path will correspond to the one in preferences.
+    PATHS = {
+
+        "1": [
+                # change this
+                (-40, -40),
+                (-20, 10),
+                (20, 0),
+                (40, -10),
+                (0, 0),
+                (40, 40),
+                (30, 30)
+             ]
+
+        "2": [
+                # add waypoints here.
+             ]
+
+        "3": [] # etc
+
+    }
+
+
+    ##################################################################
+    ################### Internal Code starts here ####################
+    ##################################################################
+
     turn_angle_tolerance = 2.5  # degrees
     drive_dist_tolerance = 3  # inches
     lift_height_tolerance = 2  # inches
@@ -14,55 +44,27 @@ class Autonomous:
 
     init_lift_height = 6  # inches above ground for initialization
 
-    def __init__(self, robot, robot_location):
+    def __init__(self, robot):
         self.robot = robot
-        self.robot_location = robot_location  # set on SmartDashboard
-
-        ds = wpilib.DriverStation.getInstance()
-        field_string = ds.getGameSpecificMessage()
-
-        if field_string == "":  # this only happens during tests
-            field_string = 'LLL'
-
-        self.close_switch = field_string[0]
-        self.scale = field_string[1]
-        self.far_switch = field_string[2]
-
         self.target = None
         self.target_height = 36  # inches-- set this according to target
         self.final_drive_dist = 6  # inches
 
-        self.waypoints = [
-            np.array([-40, -40]),
-            np.array([-20, 10]),
-            np.array([20, 0]),
-            np.array([40, -10]),
-            np.array([0, 0]),
-            np.array([40, 40]),
-            np.array([30, 30])
-        ]
+        ds = wpilib.DriverStation.getInstance()
+        field_string = ds.getGameSpecificMessage()
+        prefs = wpilib.Preferences.getInstance()
+
+        if field_string == "":  # this only happens during tests
+            field_string = 'LLL'
+
+        path = self.PATHS[prefs.getString(field_string)]
+        self.waypoints = [np.asarray(point) for point in path]
+
         self.current_pos = np.array([0, 0])
         self.active_waypoint_idx = 0
 
         self.state = 'turn'
         self.__module_angle_err_window = []
-
-        if self.robot_location == 'Middle':
-            if self.close_switch == 'L':
-                pass  # We are in middle and switch is on left.
-            else:
-                pass  # We are in middle and switch is on right.
-        elif self.robot_location == 'Left':
-            if self.close_switch == 'L':
-                pass  # We are on left and switch is on left.
-            else:
-                pass  # We are on left and switch is on right.
-        elif self.robot_location == 'Right':
-            if self.close_switch == 'L':
-                pass  # We are on right and switch is on left.
-            else:
-                pass  # We are on right and switch is on right.
-
         self.robot.drivetrain.rezero_distance()
 
     def state_init(self):
