@@ -1,4 +1,23 @@
-""" collection of functions used to manage autonomous control """
+"""
+Autonomous module.
+
+This module contains classes and functions for autonomous, which is designed as
+a finite-state automaton updated per tick in autonomousPeriodic.
+
+Autonomous transitions between these states:
+
+    'init': The robot closes the claw, fully lowers the lift, and transitions
+            onto the 'turn' state to angle toward the next waypoint.
+    'turn': The swerve modules (not the entire chassis) angle toward the next
+            waypoint, then transitions into the drive state
+    'drive': The robot drives over to the next waypoint, then transitions into
+             the turning state or the lifting state if there are no other
+             waypoints.
+    'lift': the RD4B lifts to a predetermined height (either the height of the
+            scale or switch), then transitions to the drop state.
+    'drop': The claw opens.
+
+"""
 import math
 import wpilib
 import numpy as np
@@ -6,11 +25,13 @@ import numpy as np
 
 class Autonomous:
 
-    # Put the waypoints here.
-    # Each path is represented in this form:
-    # "name of path": [list of waypoints (tuples of coordinates in inches)]
-    # The name of the path will correspond to the one in preferences.
     PATHS = {
+        """
+        Put the waypoints here.
+        Each path is represented in this form:
+        "name of path": [list of waypoints (tuples of coordinates in inches)]
+        The name of the path will correspond to the one in preferences.
+        """
 
         "1": [
                 # change this
@@ -45,11 +66,23 @@ class Autonomous:
     init_lift_height = 6  # inches above ground for initialization
 
     def __init__(self, robot):
+        """
+        Initialize autonomous.
+
+        This constructor mainly initializes the software.
+        The correct path is chosen from SmartDashboard and initialized into
+        numpy-based waypoints.  The current position is set.  Then, the state
+        is set to 'init' and physical initializations are done there.
+
+        @param robot the robot instance.
+        """
+
         self.robot = robot
         self.target = None
         self.target_height = 36  # inches-- set this according to target
         self.final_drive_dist = 6  # inches
 
+        # get preferences and the field string from the Game Data API.
         ds = wpilib.DriverStation.getInstance()
         field_string = ds.getGameSpecificMessage()
         prefs = wpilib.Preferences.getInstance()
@@ -57,9 +90,11 @@ class Autonomous:
         if field_string == "":  # this only happens during tests
             field_string = 'LLL'
 
+        # Get the corresponding path of the given field string from preferences.
         path = self.PATHS[prefs.getString(field_string)]
         self.waypoints = [np.asarray(point) for point in path]
 
+        # set current position. TODO: implement.
         self.current_pos = np.array([0, 0])
         self.active_waypoint_idx = 0
 
@@ -177,9 +212,9 @@ class Autonomous:
         self.robot.drivetrain.set_all_module_speeds(0, True)
         self.robot.claw.open()
 
-    '''
+    """
     Maps state names to functions.
-    '''
+    """
     state_table = {
         'init': state_init,
         'turn': state_turn,
