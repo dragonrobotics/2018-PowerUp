@@ -84,6 +84,13 @@ class SwerveModule(object):
             370
         )
 
+        sensor_phase = preferences.getBoolean(
+            self.name+'-Sensor Reverse',
+            False
+        )
+
+        self.drive_talon.setSensorPhase(sensor_phase)
+
         self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
         if _apply_range_hack:
             self.steer_min = preferences.getFloat(self.name+'-min', 0)
@@ -197,7 +204,6 @@ class SwerveModule(object):
         if self.drive_temp_flipped:
             speed *= -1
 
-        self.drive_talon.setSensorPhase(False)
         self.drive_talon.selectProfileSlot(1, 0)
         self.drive_talon.config_kF(0, 1023 / self.max_speed, 0)
 
@@ -213,7 +219,6 @@ class SwerveModule(object):
         if self.drive_temp_flipped:
             ticks *= -1
 
-        self.drive_talon.setSensorPhase(False)
         self.drive_talon.selectProfileSlot(0, 0)
         self.drive_talon.set(ControlMode.Position, ticks)
 
@@ -226,11 +231,7 @@ class SwerveModule(object):
 
         Args:
             angle_radians (number): The desired angle to steer towards.
-            speed (number): The desired speed to drive at.
-            direct (boolean): If True, then ``speed`` will be interpreted
-                directly as a speed (in talon native velocity units) to drive
-                at. Otherwise ``speed`` will be interpreted as a maximum
-                percentage of the module's maximum speed to drive at.
+            percent_speed (number): The desired percentage speed to drive at.
 
         See Also:
             :func:`~set_drive_speed` and :func:`~set_steer_angle`
