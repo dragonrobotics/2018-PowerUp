@@ -64,7 +64,7 @@ class Autonomous:
             else:
                 pass  # We are on right and switch is on right.
 
-        self.robot.drivetrain.rezero_distance()
+        self.robot.drivetrain.reset_drive_position()
 
     def state_init(self):
         self.robot.claw.close()  # put claw into 'closing' state
@@ -100,7 +100,7 @@ class Autonomous:
             len(self.__angle_err_window) >= self.__angle_err_window.maxlen / 2
             and avg_max_err < self.turn_angle_tolerance
         ):
-            self.robot.drivetrain.rezero_distance()
+            self.robot.drivetrain.reset_drive_position()
             self.state = 'drive'
 
     def state_drive(self):
@@ -121,7 +121,7 @@ class Autonomous:
 
             if self.active_waypoint_idx < len(self.waypoints):
                 self.__angle_err_window.clear()
-                self.robot.drivetrain.rezero_distance()
+                self.robot.drivetrain.reset_drive_position()
                 self.state = 'turn'
             else:
                 self.state = 'lift'

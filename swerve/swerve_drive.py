@@ -173,6 +173,12 @@ class SwerveDrive(object):
             for module in self.modules
         ]
 
+    def get_closed_loop_error(self):
+        return [
+            module.steer_talon.getClosedLoopError(0)
+            for module in self.modules
+        ]
+
     def reset_drive_position(self):
         for module in self.modules:
             module.reset_drive_position()
