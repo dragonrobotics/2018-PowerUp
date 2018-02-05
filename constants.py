@@ -13,6 +13,7 @@ fwdInv = True  # Fwd/Bwd axis inverted
 strInv = True  # L/R axis inverted
 rcwInv = True  # Rot axis inverted
 
+teleop_speed = 370
 
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
@@ -48,7 +49,7 @@ def load_control_config():
     Do not call this at module level (otherwise it might try to access parts of
     WPILib before they have been initialized).
     """
-    global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv
+    global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
@@ -59,15 +60,17 @@ def load_control_config():
     rcwAxis = __load_preference('Control: Rotation Axis', backup=4)
     rcwInv = __load_preference('Control: Rot Axis Inverted', backup=True)
 
+    teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
+
 
 # Swerve module hardware configuration.
 # List of tuples of form ('module name', steer_id, drive_id)
 # See swerve/swerve_drive.py
 swerve_config = [
-    ('Back Right', 15, 12),
-    ('Back Left', 4, 10),
-    ('Front Right', 1, 2),
-    ('Front Left', 5, 13),
+    ('Back Right', 11, 10),
+    ('Back Left', 9, 8),
+    ('Front Right', 7, 6),
+    ('Front Left', 5, 4),
 ]
 
 # Lift motor contorller CAN IDs. Currently dummy values.
@@ -82,5 +85,5 @@ claw_contact_sensor_channel = 1
 
 # Both are in inches, but exact units don't matter
 # (as long as both use the same units)
-chassis_length = 32
-chassis_width = 28
+chassis_length = 24
+chassis_width = 27
