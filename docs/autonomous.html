@@ -43,46 +43,128 @@
             
   <div class="section" id="module-autonomous">
 <span id="autonomous-module"></span><h1>autonomous module<a class="headerlink" href="#module-autonomous" title="Permalink to this headline">¶</a></h1>
-<p>collection of functions used to manage autonomous control</p>
+<p>Autonomous module.</p>
+<p>This module contains classes and functions for autonomous, which is designed as
+a finite-state automaton updated per tick in autonomousPeriodic.</p>
+<p>Autonomous transitions between these states:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt><cite>init</cite>: The robot closes the claw, fully lowers the lift, and transitions</dt>
+<dd>onto the <cite>turn</cite> state to angle toward the next waypoint.</dd>
+<dt><cite>turn</cite>: The swerve modules (not the entire chassis) angle toward the next</dt>
+<dd>waypoint, then transitions into the drive state</dd>
+<dt><cite>drive</cite>: The robot drives over to the next waypoint, then transitions into</dt>
+<dd>the turning state or the lifting state if there are no other
+waypoints.</dd>
+<dt><cite>lift</cite>: the RD4B lifts to a predetermined height (either the height of the</dt>
+<dd>scale or switch), then transitions to the target states.</dd>
+<dt><cite>target-turn</cite>: Turns the entire chassis towards the target (either the</dt>
+<dd>switch or the scale).</dd>
+<dt><cite>target-drive</cite>: Drives the robot towards the target. This differs slightly</dt>
+<dd>from the normal <cite>drive</cite> state because it uses sensors to
+be more accurate.</dd>
+</dl>
+<p><cite>drop</cite>: The claw opens.</p>
+</div></blockquote>
 <dl class="class">
 <dt id="autonomous.Autonomous">
-<em class="property">class </em><code class="descclassname">autonomous.</code><code class="descname">Autonomous</code><span class="sig-paren">(</span><em>robot_location</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">autonomous.</code><code class="descname">Autonomous</code><span class="sig-paren">(</span><em>robot</em>, <em>robot_position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Instantiate this from autonomousInit or robotInit.</p>
 <dl class="attribute">
-<dt id="autonomous.Autonomous.LEFT">
-<code class="descname">LEFT</code><em class="property"> = 1</em><a class="headerlink" href="#autonomous.Autonomous.LEFT" title="Permalink to this definition">¶</a></dt>
+<dt id="autonomous.Autonomous.PATHS">
+<code class="descname">PATHS</code><em class="property"> = {'1': [(-40, -40), (-20, 10), (20, 0), (40, -10), (0, 0), (40, 40), (30, 30)], '2': [], '3': [], 'default': [(-24, 0), (-24, 24), (-60, 24), (-60, 0), (0, 0)]}</em><a class="headerlink" href="#autonomous.Autonomous.PATHS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="autonomous.Autonomous.MIDDLE">
-<code class="descname">MIDDLE</code><em class="property"> = 2</em><a class="headerlink" href="#autonomous.Autonomous.MIDDLE" title="Permalink to this definition">¶</a></dt>
+<dt id="autonomous.Autonomous.drive_dist_tolerance">
+<code class="descname">drive_dist_tolerance</code><em class="property"> = 3</em><a class="headerlink" href="#autonomous.Autonomous.drive_dist_tolerance" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="autonomous.Autonomous.RIGHT">
-<code class="descname">RIGHT</code><em class="property"> = 3</em><a class="headerlink" href="#autonomous.Autonomous.RIGHT" title="Permalink to this definition">¶</a></dt>
+<dt id="autonomous.Autonomous.drive_speed">
+<code class="descname">drive_speed</code><em class="property"> = 100</em><a class="headerlink" href="#autonomous.Autonomous.drive_speed" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="autonomous.Autonomous.UNKNOWN">
-<code class="descname">UNKNOWN</code><em class="property"> = 0</em><a class="headerlink" href="#autonomous.Autonomous.UNKNOWN" title="Permalink to this definition">¶</a></dt>
+<dt id="autonomous.Autonomous.init_lift_height">
+<code class="descname">init_lift_height</code><em class="property"> = 6</em><a class="headerlink" href="#autonomous.Autonomous.init_lift_height" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="autonomous.Autonomous.lift_height_tolerance">
+<code class="descname">lift_height_tolerance</code><em class="property"> = 2</em><a class="headerlink" href="#autonomous.Autonomous.lift_height_tolerance" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="autonomous.Autonomous.periodic">
 <code class="descname">periodic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.periodic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.periodic" title="Permalink to this definition">¶</a></dt>
-<dd><p>this is called by robotpy auto periodic
-decide</p>
+<dd><p>Updates and progresses the autonomous state machine.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="autonomous.Autonomous.target">
-<code class="descname">target</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.target" title="Permalink to this definition">¶</a></dt>
-<dd><p>call from autonomous init in robotpy
-give all location information decide where to go
-:return:</p>
+<dt id="autonomous.Autonomous.state_drive">
+<code class="descname">state_drive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_drive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drive toward a waypoint.
+Calculate the distance, then move the modules that distance.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_drop">
+<code class="descname">state_drop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_drop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_drop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the claw and drop the cube.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_init">
+<code class="descname">state_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform robot-oriented initializations.</p>
+<p>Close the claw and set the lift to its lowest position, then transition
+into the turning state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_lift">
+<code class="descname">state_lift</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_lift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_lift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lift the RD4B to the height needed.
+Then transition to the target states for final adjustments.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="autonomous.Autonomous.state_table">
+<code class="descname">state_table</code><em class="property"> = {'drive': &lt;function Autonomous.state_drive at 0x7f771cb598c8&gt;, 'drop': &lt;function Autonomous.state_drop at 0x7f771cb59ae8&gt;, 'init': &lt;function Autonomous.state_init at 0x7f771cbf99d8&gt;, 'lift': &lt;function Autonomous.state_lift at 0x7f771cb59950&gt;, 'target-drive': &lt;function Autonomous.state_target_drive at 0x7f771cb59a60&gt;, 'target-turn': &lt;function Autonomous.state_target_turn at 0x7f771cb599d8&gt;, 'turn': &lt;function Autonomous.state_turn at 0x7f771cb59840&gt;}</em><a class="headerlink" href="#autonomous.Autonomous.state_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_target_drive">
+<code class="descname">state_target_drive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_target_drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_target_drive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drive a measured distance towards the target.
+This should position the claw, with the cube, right over the switch or
+scale.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_target_turn">
+<code class="descname">state_target_turn</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_target_turn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_target_turn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Complete a targeted, measured turn towards the target, turning the
+entire chassis this time instead of just each module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.state_turn">
+<code class="descname">state_turn</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.state_turn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.state_turn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the swerve modules to their desired angle.
+Then transition into the <cite>drive</cite> state.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="autonomous.Autonomous.turn_angle_tolerance">
+<code class="descname">turn_angle_tolerance</code><em class="property"> = 2.5</em><a class="headerlink" href="#autonomous.Autonomous.turn_angle_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="autonomous.Autonomous.update_smart_dashboard">
+<code class="descname">update_smart_dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.update_smart_dashboard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.update_smart_dashboard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -109,6 +191,7 @@ give all location information decide where to go
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">autonomous module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver_vision.html">driver_vision module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lift.html">lift package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="physics.html">physics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>

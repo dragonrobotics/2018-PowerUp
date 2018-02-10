@@ -27,8 +27,9 @@ from ctre.talonsrx import TalonSRX
 
 class Claw:
     claw_open_time = 0.5  # time to allow for the claw to open, in seconds
+    claw_adjust_time = 0.25
 
-    def __init__(self, talon_id, contact_sensor_channel):
+    def __init__(self, talon_id):
         """
         Create a new instance of the claw subsystem.
 
@@ -43,8 +44,17 @@ class Claw:
         """
         self.talon = TalonSRX(talon_id)
 
-        self.contact_sensor = wpilib.DigitalInput(contact_sensor_channel)
+        # Forward limit switch = claw opening limit switch
+        self.talon.configForwardLimitSwitchSource(
+            TalonSRX.LimitSwitchSource.FeedbackConnector,
+            TalonSRX.LimitSwitchNormal.NormallyOpen,
+            0
+        )
+
         self.state = 'neutral'
+
+        self.closeAdjustTimer = wpilib.Timer()
+        self.openTimer = wpilib.Timer()
 
     def close(self):
         """
@@ -67,7 +77,8 @@ class Claw:
         """
         if self.state != 'neutral' and self.state != 'opening':
             self.state = 'opening'
-            self.open_start_time = None
+            self.openTimer.reset()
+            self.openTimer.start()
 
     def toggle(self):
         """
@@ -87,35 +98,41 @@ class Claw:
 
         # if the state is manual control, stop update immediately and return.
         if self.state == 'manual_ctrl':
-            self.open_start_time = None
+            self.openTimer.reset()
+            self.openTimer.stop()
             return
 
         # if the state is neutral, clear the start time and set the talon speed
         # to 0%
         elif self.state == 'neutral':
-            self.open_start_time = None
+            self.openTimer.reset()
+            self.openTimer.stop()
             self.talon.set(TalonSRX.ControlMode.PercentVbus, 0)
 
         # if the state is "closing", set the talon speed to -100%, and if the
         # touch sensor is depressed, transition to the "closed" state.
         elif self.state == 'closing':
             self.talon.set(TalonSRX.ControlMode.PercentVbus, -1.0)
-            if self.contact_sensor.get():  # contact sensor pressed?
+            fwdLim, revLim = self.talon.getLimitSwitchState()
+
+            if revLim:  # contact sensor pressed?
                 self.state = 'closed'
+                self.closeAdjustTimer.reset()
+                self.closeAdjustTimer.start()
 
         # if the state is "closed", use less power to the motors--
         # Maintain grip, but don't squeeze too hard
         elif self.state == 'closed':
-            self.talon.set(TalonSRX.ControlMode.PercentVbus, -0.25)
+            if self.closeAdjustTimer.get() < self.claw_adjust_time:
+                self.talon.set(TalonSRX.ControlMode.PercentVbus, -0.5)
+            else:
+                self.talon.set(TalonSRX.ControlMode.PercentVbus, 0)
 
         # if the state is "opening", save the current time if the start time
         # is currently empty and set the motor speed to +100%.
         # Run until reaching claw_open_time, then transition to the "neutral"
         # state.
         elif self.state == 'opening':
-            cur_time = wpilib.Timer.getFPGATimestamp()
-            if self.open_start_time is None:
-                self.open_start_time = cur_time
             self.talon.set(TalonSRX.ControlMode.PercentVbus, 1.0)
-            if cur_time - self.open_start_time > self.claw_open_time:
+            if self.openTimer.get() < self.claw_open_time:
                 self.state = 'neutral'

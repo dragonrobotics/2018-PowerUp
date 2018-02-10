@@ -55,7 +55,7 @@
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <dl class="method">
 <dt id="swerve.swerve_drive.SwerveDrive.drive">
-<code class="descname">drive</code><span class="sig-paren">(</span><em>forward</em>, <em>strafe</em>, <em>rotate_cw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.drive" title="Permalink to this definition">¶</a></dt>
+<code class="descname">drive</code><span class="sig-paren">(</span><em>forward</em>, <em>strafe</em>, <em>rotate_cw</em>, <em>max_wheel_speed=370</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.drive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and apply module angles and speeds to achieve a given
 linear / angular velocity.</p>
 <p>All control inputs (arguments) are assumed to be in a robot
@@ -79,16 +79,56 @@ robot.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.drive_angle_distance">
+<code class="descname">drive_angle_distance</code><span class="sig-paren">(</span><em>angle_rad</em>, <em>dist_ticks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.drive_angle_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.drive_angle_distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.get_closed_loop_error">
+<code class="descname">get_closed_loop_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.get_closed_loop_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.get_closed_loop_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.get_module_distances">
+<code class="descname">get_module_distances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.get_module_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.get_module_distances" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="swerve.swerve_drive.SwerveDrive.load_config_values">
 <code class="descname">load_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.load_config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.load_config_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load configuration values for all modules within this swerve drive.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.reset_drive_position">
+<code class="descname">reset_drive_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.reset_drive_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.reset_drive_position" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="swerve.swerve_drive.SwerveDrive.save_config_values">
 <code class="descname">save_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.save_config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.save_config_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save configuration values for all modules within this swerve drive.</p>
 </dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.set_all_module_angles">
+<code class="descname">set_all_module_angles</code><span class="sig-paren">(</span><em>angle_rad</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.set_all_module_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.set_all_module_angles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.set_all_module_dist_ticks">
+<code class="descname">set_all_module_dist_ticks</code><span class="sig-paren">(</span><em>dist_ticks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.set_all_module_dist_ticks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.set_all_module_dist_ticks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.set_all_module_speeds">
+<code class="descname">set_all_module_speeds</code><span class="sig-paren">(</span><em>speed</em>, <em>direct=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.set_all_module_speeds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.set_all_module_speeds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="swerve.swerve_drive.SwerveDrive.turn_to_angle">
+<code class="descname">turn_to_angle</code><span class="sig-paren">(</span><em>imu</em>, <em>target_angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_drive.html#SwerveDrive.turn_to_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_drive.SwerveDrive.turn_to_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="swerve.swerve_drive.SwerveDrive.update_smart_dashboard">
@@ -108,7 +148,7 @@ robot.</li>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <dl class="method">
 <dt id="swerve.swerve_module.SwerveModule.apply_control_values">
-<code class="descname">apply_control_values</code><span class="sig-paren">(</span><em>angle_radians</em>, <em>percent_speed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.apply_control_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.apply_control_values" title="Permalink to this definition">¶</a></dt>
+<code class="descname">apply_control_values</code><span class="sig-paren">(</span><em>angle_radians</em>, <em>speed</em>, <em>direct=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.apply_control_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.apply_control_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a steering angle and a drive speed simultaneously.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -145,6 +185,11 @@ constructor.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="swerve.swerve_module.SwerveModule.reset_drive_position">
+<code class="descname">reset_drive_position</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.reset_drive_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.reset_drive_position" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="swerve.swerve_module.SwerveModule.save_config_values">
 <code class="descname">save_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.save_config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.save_config_values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save configuration values for this module via WPILib’s
@@ -152,8 +197,13 @@ Preferences interface.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="swerve.swerve_module.SwerveModule.set_drive_distance">
+<code class="descname">set_drive_distance</code><span class="sig-paren">(</span><em>ticks</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.set_drive_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.set_drive_distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="swerve.swerve_module.SwerveModule.set_drive_speed">
-<code class="descname">set_drive_speed</code><span class="sig-paren">(</span><em>percent_speed</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.set_drive_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.set_drive_speed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_drive_speed</code><span class="sig-paren">(</span><em>speed</em>, <em>direct=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/swerve/swerve_module.html#SwerveModule.set_drive_speed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#swerve.swerve_module.SwerveModule.set_drive_speed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Drive the swerve module wheels at a given percentage of
 maximum power or speed.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -176,14 +226,14 @@ reverse.</td>
 This method attempts to find the shortest path to the given
 steering angle; thus, it may in actuality servo to the
 position opposite the passed angle and reverse the drive
-direction.</p>
+direction.
+:param angle_radians: The angle to steer towards in radians,</p>
+<blockquote>
+<div>where 0 points in the chassis forward direction.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>angle_radians</strong> (<em>number</em>) – The angle to steer towards in radians,
-where 0 points in the chassis forward direction.</td>
-</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -227,6 +277,7 @@ from the steer Talon, and the current target steer position.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="autonomous.html">autonomous module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver_vision.html">driver_vision module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lift.html">lift package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="physics.html">physics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>

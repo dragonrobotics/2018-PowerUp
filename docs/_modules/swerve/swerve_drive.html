@@ -99,7 +99,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sd_update_timer</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sd_update_timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SwerveDrive.drive"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.drive">[docs]</a>    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="n">strafe</span><span class="p">,</span> <span class="n">rotate_cw</span><span class="p">):</span>
+<div class="viewcode-block" id="SwerveDrive.drive"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.drive">[docs]</a>    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward</span><span class="p">,</span> <span class="n">strafe</span><span class="p">,</span> <span class="n">rotate_cw</span><span class="p">,</span> <span class="n">max_wheel_speed</span><span class="o">=</span><span class="mi">370</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute and apply module angles and speeds to achieve a given</span>
 <span class="sd">        linear / angular velocity.</span>
@@ -131,7 +131,98 @@
 
         <span class="c1"># back-right, back-left, front-right, front-left?</span>
         <span class="k">for</span> <span class="n">module</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">speed</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">speeds</span><span class="p">):</span>
-            <span class="n">module</span><span class="o">.</span><span class="n">apply_control_values</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
+            <span class="n">module</span><span class="o">.</span><span class="n">apply_control_values</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">speed</span> <span class="o">*</span> <span class="n">max_wheel_speed</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.turn_to_angle"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.turn_to_angle">[docs]</a>    <span class="k">def</span> <span class="nf">turn_to_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imu</span><span class="p">,</span> <span class="n">target_angle</span><span class="p">):</span>
+        <span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+
+        <span class="n">min_wheel_speed</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s1">&#39;Turn Min Wheel Speed&#39;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="n">max_wheel_speed</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s1">&#39;Turn Max Wheel Speed&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">kP</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s1">&#39;Turn kP&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="n">kD</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s1">&#39;Turn kD&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="s1">&#39;Turn Error Tolerance&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">hdg</span> <span class="o">=</span> <span class="n">imu</span><span class="o">.</span><span class="n">get_continuous_heading</span><span class="p">()</span>
+        <span class="n">n_rotations</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="n">hdg</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="n">imu</span><span class="o">.</span><span class="n">get_yaw_rate</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
+
+        <span class="n">target_angle</span> <span class="o">+=</span> <span class="p">(</span><span class="n">n_rotations</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">prefs</span><span class="o">.</span><span class="n">getBoolean</span><span class="p">(</span><span class="s1">&#39;Reverse Heading Direction&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">target_angle</span> <span class="o">+=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="n">err</span> <span class="o">=</span> <span class="n">target_angle</span> <span class="o">-</span> <span class="n">hdg</span>
+
+        <span class="k">if</span> <span class="n">err</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rate</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">spd</span> <span class="o">=</span> <span class="p">(</span><span class="n">kP</span> <span class="o">*</span> <span class="n">err</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">kD</span> <span class="o">*</span> <span class="n">rate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">spd</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_wheel_speed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">spd</span> <span class="o">=</span> <span class="o">-</span><span class="n">min_wheel_speed</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spd</span> <span class="o">=</span> <span class="n">min_wheel_speed</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">spd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_wheel_speed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">spd</span> <span class="o">=</span> <span class="o">-</span><span class="n">max_wheel_speed</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spd</span> <span class="o">=</span> <span class="n">max_wheel_speed</span>
+
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">err</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+                <span class="n">module</span><span class="o">.</span><span class="n">set_drive_speed</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">)</span>
+
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span>
+
+        <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">module</span><span class="p">,</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">,</span> <span class="n">angles</span><span class="p">):</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_steer_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_drive_speed</span><span class="p">(</span><span class="n">spd</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.set_all_module_angles"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.set_all_module_angles">[docs]</a>    <span class="k">def</span> <span class="nf">set_all_module_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_rad</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_steer_angle</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.set_all_module_speeds"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.set_all_module_speeds">[docs]</a>    <span class="k">def</span> <span class="nf">set_all_module_speeds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_drive_speed</span><span class="p">(</span><span class="n">speed</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.set_all_module_dist_ticks"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.set_all_module_dist_ticks">[docs]</a>    <span class="k">def</span> <span class="nf">set_all_module_dist_ticks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dist_ticks</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_drive_distance</span><span class="p">(</span><span class="n">dist_ticks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.drive_angle_distance"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.drive_angle_distance">[docs]</a>    <span class="k">def</span> <span class="nf">drive_angle_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_rad</span><span class="p">,</span> <span class="n">dist_ticks</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_steer_angle</span><span class="p">(</span><span class="n">angle_rad</span><span class="p">)</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">set_drive_distance</span><span class="p">(</span><span class="n">dist_ticks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.get_module_distances"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.get_module_distances">[docs]</a>    <span class="k">def</span> <span class="nf">get_module_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getQuadraturePosition</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.get_closed_loop_error"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.get_closed_loop_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_closed_loop_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getClosedLoopError</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SwerveDrive.reset_drive_position"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.reset_drive_position">[docs]</a>    <span class="k">def</span> <span class="nf">reset_drive_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">reset_drive_position</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="SwerveDrive.save_config_values"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_drive.SwerveDrive.save_config_values">[docs]</a>    <span class="k">def</span> <span class="nf">save_config_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -152,7 +243,16 @@
 <span class="sd">        Update Smart Dashboard for all modules within this swerve drive.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
-            <span class="n">module</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span></div></div>
+            <span class="n">module</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+
+        <span class="n">overall_max_speed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">module</span><span class="o">.</span><span class="n">max_observed_speed</span> <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">]</span>
+        <span class="p">))</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="s1">&#39;Overall Max Observed Speed&#39;</span><span class="p">,</span>
+            <span class="n">overall_max_speed</span>
+        <span class="p">)</span></div></div>
 </pre></div>
 
           </div>

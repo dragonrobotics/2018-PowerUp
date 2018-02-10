@@ -42,13 +42,19 @@
   <h1>Source code for swerve.swerve_module</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Implements common logic for swerve modules.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">ctre.cantalon</span> <span class="k">import</span> <span class="n">CANTalon</span>
+<span class="kn">from</span> <span class="nn">ctre.talonsrx</span> <span class="k">import</span> <span class="n">TalonSRX</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">wpilib</span>
 <span class="kn">import</span> <span class="nn">math</span>
+
+<span class="n">ControlMode</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span>
+<span class="n">FeedbackDevice</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="o">.</span><span class="n">FeedbackDevice</span>
 
 
 <span class="c1"># Set to true to add safety margin to steer ranges</span>
 <span class="n">_apply_range_hack</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">_acceptable_steer_err_degrees</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># degrees</span>
+<span class="n">_acceptable_steer_err</span> <span class="o">=</span> <span class="n">_acceptable_steer_err_degrees</span> <span class="o">*</span> <span class="p">(</span><span class="mi">512</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SwerveModule"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule">[docs]</a><span class="k">class</span> <span class="nc">SwerveModule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -79,19 +85,27 @@
 <span class="sd">            drive_reversed (boolean): Whether or not the drive motor&#39;s output</span>
 <span class="sd">                is currently reversed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span> <span class="o">=</span> <span class="n">CANTalon</span><span class="p">(</span><span class="n">steer_id</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span> <span class="o">=</span> <span class="n">CANTalon</span><span class="p">(</span><span class="n">drive_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="p">(</span><span class="n">steer_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="p">(</span><span class="n">drive_id</span><span class="p">)</span>
 
         <span class="c1"># Configure steering motors to use abs. encoders</span>
         <span class="c1"># and closed-loop control</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">changeControlMode</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">setFeedbackDevice</span><span class="p">(</span><span class="n">CANTalon</span><span class="o">.</span><span class="n">FeedbackDevice</span><span class="o">.</span><span class="n">AnalogEncoder</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">setProfile</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">configSelectedFeedbackSensor</span><span class="p">(</span><span class="n">FeedbackDevice</span><span class="o">.</span><span class="n">Analog</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">selectProfileSlot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">configAllowableClosedloopError</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">_acceptable_steer_err</span><span class="p">),</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">configSelectedFeedbackSensor</span><span class="p">(</span><span class="n">FeedbackDevice</span><span class="o">.</span><span class="n">QuadEncoder</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">setQuadraturePosition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steer_target</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steer_target_native</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drive_temp_flipped</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_speed</span> <span class="o">=</span> <span class="mi">470</span>  <span class="c1"># ticks / 100ms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_observed_speed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">load_config_values</span><span class="p">()</span>
 
@@ -103,9 +117,21 @@
 <span class="sd">        The key names are derived from the name passed to the</span>
 <span class="sd">        constructor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">setProfile</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">selectProfileSlot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="n">preferences</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_speed</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;-Max Wheel Speed&#39;</span><span class="p">,</span>
+            <span class="mi">370</span>
+        <span class="p">)</span>
+
+        <span class="n">sensor_phase</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getBoolean</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;-Sensor Reverse&#39;</span><span class="p">,</span>
+            <span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">setSensorPhase</span><span class="p">(</span><span class="n">sensor_phase</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getFloat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;-offset&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_apply_range_hack</span><span class="p">:</span>
@@ -129,9 +155,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">steer_reversed</span> <span class="o">=</span> <span class="n">preferences</span><span class="o">.</span><span class="n">getBoolean</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;-steer-reversed&#39;</span><span class="p">,</span> <span class="kc">False</span>
-        <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">reverseOutput</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_reversed</span><span class="p">)</span></div>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="SwerveModule.save_config_values"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.save_config_values">[docs]</a>    <span class="k">def</span> <span class="nf">save_config_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -152,7 +176,7 @@
 <span class="sd">        Get the current angular position of the swerve module in</span>
 <span class="sd">        radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">native_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">native_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getSelectedSensorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">native_units</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span>
 
         <span class="c1"># Position in rotations</span>
@@ -168,14 +192,14 @@
 <span class="sd">        steering angle; thus, it may in actuality servo to the</span>
 <span class="sd">        position opposite the passed angle and reverse the drive</span>
 <span class="sd">        direction.</span>
-<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            angle_radians (number): The angle to steer towards in radians,</span>
 <span class="sd">                where 0 points in the chassis forward direction.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_rotations</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span><span class="p">)</span>
-            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_range</span><span class="p">)</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getSelectedSensorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span><span class="p">)</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_range</span>
+        <span class="p">)</span>
         <span class="n">current_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_steer_angle</span><span class="p">()</span>
         <span class="n">adjusted_target</span> <span class="o">=</span> <span class="n">angle_radians</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_rotations</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
@@ -202,11 +226,11 @@
 
         <span class="c1"># Compute and send actual target to motor controller</span>
         <span class="n">native_units</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_target</span> <span class="o">*</span> <span class="mi">512</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">native_units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">,</span> <span class="n">native_units</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">drive_temp_flipped</span> <span class="o">=</span> <span class="n">should_reverse_drive</span></div>
 
-<div class="viewcode-block" id="SwerveModule.set_drive_speed"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.set_drive_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_drive_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">percent_speed</span><span class="p">):</span>
+<div class="viewcode-block" id="SwerveModule.set_drive_speed"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.set_drive_speed">[docs]</a>    <span class="k">def</span> <span class="nf">set_drive_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Drive the swerve module wheels at a given percentage of</span>
 <span class="sd">        maximum power or speed.</span>
@@ -217,14 +241,33 @@
 <span class="sd">                reverse.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_reversed</span><span class="p">:</span>
-            <span class="n">percent_speed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">speed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_temp_flipped</span><span class="p">:</span>
-            <span class="n">percent_speed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">speed</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">percent_speed</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">selectProfileSlot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">config_kF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1023</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_speed</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-<div class="viewcode-block" id="SwerveModule.apply_control_values"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.apply_control_values">[docs]</a>    <span class="k">def</span> <span class="nf">apply_control_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_radians</span><span class="p">,</span> <span class="n">percent_speed</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">direct</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Velocity</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Velocity</span><span class="p">,</span> <span class="n">speed</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_speed</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveModule.set_drive_distance"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.set_drive_distance">[docs]</a>    <span class="k">def</span> <span class="nf">set_drive_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ticks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_reversed</span><span class="p">:</span>
+            <span class="n">ticks</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_temp_flipped</span><span class="p">:</span>
+            <span class="n">ticks</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">selectProfileSlot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">Position</span><span class="p">,</span> <span class="n">ticks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveModule.reset_drive_position"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.reset_drive_position">[docs]</a>    <span class="k">def</span> <span class="nf">reset_drive_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">setQuadraturePosition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SwerveModule.apply_control_values"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.apply_control_values">[docs]</a>    <span class="k">def</span> <span class="nf">apply_control_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_radians</span><span class="p">,</span> <span class="n">speed</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set a steering angle and a drive speed simultaneously.</span>
 
@@ -236,7 +279,7 @@
 <span class="sd">            :func:`~set_drive_speed` and :func:`~set_steer_angle`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_steer_angle</span><span class="p">(</span><span class="n">angle_radians</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_drive_speed</span><span class="p">(</span><span class="n">percent_speed</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_drive_speed</span><span class="p">(</span><span class="n">speed</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SwerveModule.update_smart_dashboard"><a class="viewcode-back" href="../../swerve.html#swerve.swerve_module.SwerveModule.update_smart_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">update_smart_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -250,7 +293,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Position&#39;</span><span class="p">,</span>
-            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">512</span><span class="p">)</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getSelectedSensorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_offset</span><span class="p">)</span>
+            <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">512</span>
+        <span class="p">)</span>
 
         <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; ADC&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getAnalogInRaw</span><span class="p">())</span>
@@ -261,7 +306,50 @@
 
         <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Steer Error&#39;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getClosedLoopError</span><span class="p">())</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getClosedLoopError</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Error&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getClosedLoopError</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Ticks&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getQuadraturePosition</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getQuadratureVelocity</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span><span class="p">[</span><span class="o">-</span><span class="mi">50</span><span class="p">:]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_drive_spd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_drive_speeds</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_drive_spd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_observed_speed</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_observed_speed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_drive_spd</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Velocity&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cur_drive_spd</span>
+        <span class="p">)</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Velocity (Max)&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_observed_speed</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">RobotBase</span><span class="o">.</span><span class="n">isReal</span><span class="p">():</span>
+            <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Percent Output&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getMotorOutputPercent</span><span class="p">()</span>
+            <span class="p">)</span>
+
+            <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Drive Current&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drive_talon</span><span class="o">.</span><span class="n">getOutputCurrent</span><span class="p">()</span>
+            <span class="p">)</span>
+
+            <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39; Steer Current&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">steer_talon</span><span class="o">.</span><span class="n">getOutputCurrent</span><span class="p">()</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
