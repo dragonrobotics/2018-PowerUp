@@ -4,8 +4,8 @@ Contains functions for teleop logic.
 import wpilib
 import numpy as np
 import constants
-import math
 from robotpy_ext.control.button_debouncer import ButtonDebouncer
+
 
 class Teleop:
     last_applied_control = np.array([0, 0, 0])

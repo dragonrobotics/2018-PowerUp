@@ -48,21 +48,22 @@
 
 <span class="sd">Autonomous transitions between these states:</span>
 
-<span class="sd">    `init`: The robot closes the claw, fully lowers the lift, and transitions</span>
-<span class="sd">            onto the `turn` state to angle toward the next waypoint.</span>
-<span class="sd">    `turn`: The swerve modules (not the entire chassis) angle toward the next</span>
-<span class="sd">            waypoint, then transitions into the drive state</span>
-<span class="sd">    `drive`: The robot drives over to the next waypoint, then transitions into</span>
-<span class="sd">             the turning state or the lifting state if there are no other</span>
-<span class="sd">             waypoints.</span>
-<span class="sd">    `lift`: the RD4B lifts to a predetermined height (either the height of the</span>
-<span class="sd">            scale or switch), then transitions to the target states.</span>
-<span class="sd">    `target-turn`: Turns the entire chassis towards the target (either the</span>
-<span class="sd">                   switch or the scale).</span>
-<span class="sd">    `target-drive`: Drives the robot towards the target. This differs slightly</span>
-<span class="sd">                    from the normal `drive` state because it uses sensors to</span>
-<span class="sd">                    be more accurate.</span>
-<span class="sd">    `drop`: The claw opens.</span>
+<span class="sd">    - **init**: The robot closes the claw, fully lowers the lift, and</span>
+<span class="sd">      transitions onto the **turn** state to angle toward the next waypoint.</span>
+<span class="sd">    - **turn**: The swerve modules (not the entire chassis) angle toward the</span>
+<span class="sd">      next waypoint, then transitions into the drive state</span>
+<span class="sd">    - **drive**: The robot drives over to the next waypoint, then transitions</span>
+<span class="sd">      into the turning state or the lifting state if there are no other</span>
+<span class="sd">      waypoints.</span>
+<span class="sd">    - **lift**: the RD4B lifts to a predetermined height (either the height of</span>
+<span class="sd">      the scale or switch), then transitions to the target states.</span>
+<span class="sd">    - **target-turn**: Turns the entire chassis towards the target (either the</span>
+<span class="sd">      switch or the scale).</span>
+<span class="sd">    - **target-drive**: Drives the robot towards the target. This differs</span>
+<span class="sd">      slightly from the normal **drive** state because it uses sensors to be</span>
+<span class="sd">      more accurate.</span>
+<span class="sd">    - **drop**: The claw opens.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
@@ -72,6 +73,19 @@
 
 
 <div class="viewcode-block" id="Autonomous"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous">[docs]</a><span class="k">class</span> <span class="nc">Autonomous</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements a finite-state automaton for controlling autonomous.</span>
+<span class="sd">    Also, this class includes a way to input waypoint coordinates into a</span>
+<span class="sd">    a template to be automatically selected and formatted as necessary.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        robot: the robot instance.</span>
+<span class="sd">        robot_position: the position of the robot on the field.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Dictionary of paths (arrays of waypoints).  The right one is chosen</span>
+    <span class="c1">#: at runtime.</span>
     <span class="n">PATHS</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">(</span><span class="o">-</span><span class="mi">24</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
@@ -103,13 +117,11 @@
     <span class="c1"># Internal code starts here.</span>
     <span class="c1">##################################################################</span>
 
-    <span class="n">turn_angle_tolerance</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c1"># degrees</span>
-    <span class="n">drive_dist_tolerance</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># inches</span>
-    <span class="n">lift_height_tolerance</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># inches</span>
-
-    <span class="n">drive_speed</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># talon native units / 100ms</span>
-
-    <span class="n">init_lift_height</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># inches above ground for initialization</span>
+    <span class="n">turn_angle_tolerance</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="c1">#: a tolerance range for turning, in degrees.</span>
+    <span class="n">drive_dist_tolerance</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1">#: a tolerance range for driving, in inches.</span>
+    <span class="n">lift_height_tolerance</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#: a tolerance range for lifting, in inches.</span>
+    <span class="n">drive_speed</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1">#: how fast to drive, in native units per 100ms</span>
+    <span class="n">init_lift_height</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1">#: initial lift height, in inches above the ground.</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">robot_position</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -119,9 +131,6 @@
 <span class="sd">        The correct path is chosen from SmartDashboard and initialized into</span>
 <span class="sd">        numpy-based waypoints.  The current position is set.  Then, the state</span>
 <span class="sd">        is set to &#39;init&#39; and physical initializations are done there.</span>
-
-<span class="sd">        Parameters:</span>
-<span class="sd">            robot: the robot instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># basic initalization.</span>
@@ -315,9 +324,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">claw</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
 
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Maps state names to functions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Maps state names to functions.</span>
     <span class="n">state_table</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">state_init</span><span class="p">,</span>
         <span class="s1">&#39;turn&#39;</span><span class="p">:</span> <span class="n">state_turn</span><span class="p">,</span>
@@ -341,6 +349,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Autonomous.update_smart_dashboard"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.update_smart_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">update_smart_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Periodically call this function to update the smartdashboard with</span>
+<span class="sd">        important information about the autonomous class, for troubleshooting/</span>
+<span class="sd">        monitoring purposes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putString</span><span class="p">(</span>
             <span class="s1">&#39;autonomous state&#39;</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
@@ -406,7 +420,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

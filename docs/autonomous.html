@@ -48,52 +48,73 @@
 a finite-state automaton updated per tick in autonomousPeriodic.</p>
 <p>Autonomous transitions between these states:</p>
 <blockquote>
-<div><dl class="docutils">
-<dt><cite>init</cite>: The robot closes the claw, fully lowers the lift, and transitions</dt>
-<dd>onto the <cite>turn</cite> state to angle toward the next waypoint.</dd>
-<dt><cite>turn</cite>: The swerve modules (not the entire chassis) angle toward the next</dt>
-<dd>waypoint, then transitions into the drive state</dd>
-<dt><cite>drive</cite>: The robot drives over to the next waypoint, then transitions into</dt>
-<dd>the turning state or the lifting state if there are no other
-waypoints.</dd>
-<dt><cite>lift</cite>: the RD4B lifts to a predetermined height (either the height of the</dt>
-<dd>scale or switch), then transitions to the target states.</dd>
-<dt><cite>target-turn</cite>: Turns the entire chassis towards the target (either the</dt>
-<dd>switch or the scale).</dd>
-<dt><cite>target-drive</cite>: Drives the robot towards the target. This differs slightly</dt>
-<dd>from the normal <cite>drive</cite> state because it uses sensors to
-be more accurate.</dd>
-</dl>
-<p><cite>drop</cite>: The claw opens.</p>
+<div><ul class="simple">
+<li><strong>init</strong>: The robot closes the claw, fully lowers the lift, and
+transitions onto the <strong>turn</strong> state to angle toward the next waypoint.</li>
+<li><strong>turn</strong>: The swerve modules (not the entire chassis) angle toward the
+next waypoint, then transitions into the drive state</li>
+<li><strong>drive</strong>: The robot drives over to the next waypoint, then transitions
+into the turning state or the lifting state if there are no other
+waypoints.</li>
+<li><strong>lift</strong>: the RD4B lifts to a predetermined height (either the height of
+the scale or switch), then transitions to the target states.</li>
+<li><strong>target-turn</strong>: Turns the entire chassis towards the target (either the
+switch or the scale).</li>
+<li><strong>target-drive</strong>: Drives the robot towards the target. This differs
+slightly from the normal <strong>drive</strong> state because it uses sensors to be
+more accurate.</li>
+<li><strong>drop</strong>: The claw opens.</li>
+</ul>
 </div></blockquote>
 <dl class="class">
 <dt id="autonomous.Autonomous">
 <em class="property">class </em><code class="descclassname">autonomous.</code><code class="descname">Autonomous</code><span class="sig-paren">(</span><em>robot</em>, <em>robot_position</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This class implements a finite-state automaton for controlling autonomous.
+Also, this class includes a way to input waypoint coordinates into a
+a template to be automatically selected and formatted as necessary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>robot</strong> – the robot instance.</li>
+<li><strong>robot_position</strong> – the position of the robot on the field.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="autonomous.Autonomous.PATHS">
 <code class="descname">PATHS</code><em class="property"> = {'1': [(-40, -40), (-20, 10), (20, 0), (40, -10), (0, 0), (40, 40), (30, 30)], '2': [], '3': [], 'default': [(-24, 0), (-24, 24), (-60, 24), (-60, 0), (0, 0)]}</em><a class="headerlink" href="#autonomous.Autonomous.PATHS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Dictionary of paths (arrays of waypoints).  The right one is chosen
+at runtime.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="autonomous.Autonomous.drive_dist_tolerance">
 <code class="descname">drive_dist_tolerance</code><em class="property"> = 3</em><a class="headerlink" href="#autonomous.Autonomous.drive_dist_tolerance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>a tolerance range for driving, in inches.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="autonomous.Autonomous.drive_speed">
 <code class="descname">drive_speed</code><em class="property"> = 100</em><a class="headerlink" href="#autonomous.Autonomous.drive_speed" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>how fast to drive, in native units per 100ms</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="autonomous.Autonomous.init_lift_height">
 <code class="descname">init_lift_height</code><em class="property"> = 6</em><a class="headerlink" href="#autonomous.Autonomous.init_lift_height" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>initial lift height, in inches above the ground.</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="autonomous.Autonomous.lift_height_tolerance">
 <code class="descname">lift_height_tolerance</code><em class="property"> = 2</em><a class="headerlink" href="#autonomous.Autonomous.lift_height_tolerance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>a tolerance range for lifting, in inches.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="autonomous.Autonomous.periodic">
@@ -131,8 +152,9 @@ Then transition to the target states for final adjustments.</p>
 
 <dl class="attribute">
 <dt id="autonomous.Autonomous.state_table">
-<code class="descname">state_table</code><em class="property"> = {'drive': &lt;function Autonomous.state_drive at 0x7f771cb598c8&gt;, 'drop': &lt;function Autonomous.state_drop at 0x7f771cb59ae8&gt;, 'init': &lt;function Autonomous.state_init at 0x7f771cbf99d8&gt;, 'lift': &lt;function Autonomous.state_lift at 0x7f771cb59950&gt;, 'target-drive': &lt;function Autonomous.state_target_drive at 0x7f771cb59a60&gt;, 'target-turn': &lt;function Autonomous.state_target_turn at 0x7f771cb599d8&gt;, 'turn': &lt;function Autonomous.state_turn at 0x7f771cb59840&gt;}</em><a class="headerlink" href="#autonomous.Autonomous.state_table" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">state_table</code><em class="property"> = {'drive': &lt;function Autonomous.state_drive at 0x7f52d645c378&gt;, 'drop': &lt;function Autonomous.state_drop at 0x7f52d645c598&gt;, 'init': &lt;function Autonomous.state_init at 0x7f52d67ceea0&gt;, 'lift': &lt;function Autonomous.state_lift at 0x7f52d645c400&gt;, 'target-drive': &lt;function Autonomous.state_target_drive at 0x7f52d645c510&gt;, 'target-turn': &lt;function Autonomous.state_target_turn at 0x7f52d645c488&gt;, 'turn': &lt;function Autonomous.state_turn at 0x7f52d645c2f0&gt;}</em><a class="headerlink" href="#autonomous.Autonomous.state_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps state names to functions.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="autonomous.Autonomous.state_target_drive">
@@ -159,12 +181,16 @@ Then transition into the <cite>drive</cite> state.</p>
 <dl class="attribute">
 <dt id="autonomous.Autonomous.turn_angle_tolerance">
 <code class="descname">turn_angle_tolerance</code><em class="property"> = 2.5</em><a class="headerlink" href="#autonomous.Autonomous.turn_angle_tolerance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>a tolerance range for turning, in degrees.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="autonomous.Autonomous.update_smart_dashboard">
 <code class="descname">update_smart_dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/autonomous.html#Autonomous.update_smart_dashboard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#autonomous.Autonomous.update_smart_dashboard" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Periodically call this function to update the smartdashboard with
+important information about the autonomous class, for troubleshooting/
+monitoring purposes.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -232,7 +258,7 @@ Then transition into the <cite>drive</cite> state.</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

@@ -1,24 +1,23 @@
 """
-@file claw.py
-Code for the claw subsystem
+Code for the claw subsystem.
 
 This file contains code for the claw, which is implemented as a finite-state
 automaton with these states:
 
-- ``neutral``: the claw is fully open and not in action.
-- ``closing``: the claw is transitioning from the "neutral" state to the
+- **neutral**: the claw is fully open and not in action.
+- **closing**: the claw is transitioning from the "neutral" state to the
   "closed" state.
-- ``closed``: the claw is in the closed position, but still exerting light
+- **closed**: the claw is in the closed position, but still exerting light
   pressure to maintain grip on the cube.
-- ``opening``: the claw is transitioning from the "closed" state to the
+- **opening**: the claw is transitioning from the "closed" state to the
   "neutral" state.
-- ``manual_ctrl``: a disconnected state from the other four; used when the
+- **manual_ctrl**: a disconnected state from the other four; used when the
   driver wants full control over the claw without assistance
   from the state automaton.
 
-@author Brandon Gong, Sebastian Mobo
-@version 0.0.1
-@date January 19, 2018
+:Authors: Brandon Gong, Sebastian Mobo
+:Version: 0.0.1
+:Date: January 19, 2018
  """
 
 import wpilib
@@ -26,7 +25,15 @@ from ctre.talonsrx import TalonSRX
 
 
 class Claw:
-    claw_open_time = 0.5  # time to allow for the claw to open, in seconds
+    """
+    Implements a finite-state automaton for manipulating the claw.
+
+    Parameters:
+        talon_id: the ID number of the talon on the claw.
+        contact_sensor_channel: the channel that the contact sensor is
+            connected to.
+    """
+    claw_open_time = 0.5  #: time to allow for the claw to open, in seconds
     claw_adjust_time = 0.25
 
     def __init__(self, talon_id):
@@ -36,11 +43,6 @@ class Claw:
         This function constructs and configures the CANTalon instance and the
         touch sensor. It also sets the state machine to the neutral starting
         state.
-
-        Args:
-            talon_id: the ID number of the talon on the claw.
-            contact_sensor_channel: the channel that the contact sensor is
-                                    connected to.
         """
         self.talon = TalonSRX(talon_id)
 

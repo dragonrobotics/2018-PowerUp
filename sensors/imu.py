@@ -2,6 +2,7 @@ import math
 import wpilib
 from robotpy_ext.common_drivers.navx.ahrs import AHRS
 
+
 class IMU:
     def __init__(self, port, imu_type='navx', interface='spi'):
         self.type = imu_type
@@ -79,7 +80,7 @@ class IMU:
             'IMU Present',
             self.is_present()
         )
-        
+
         wpilib.SmartDashboard.putNumber(
             'Heading',
             self.get_robot_heading()
