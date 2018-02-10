@@ -4,8 +4,7 @@ import swerve
 import lift
 from teleop import Teleop
 from autonomous import Autonomous
-from robotpy_ext.common_drivers.navx.ahrs import AHRS
-
+from sensors.imu import IMU
 
 class Robot(wpilib.IterativeRobot):
     def robotInit(self):
@@ -29,21 +28,16 @@ class Robot(wpilib.IterativeRobot):
             constants.swerve_config
         )
 
-        #self.lift = lift.RD4BLift(
-        #    constants.lift_ids['left'],
-        #    constants.lift_ids['right']
-        #)
+        self.lift = lift.RD4BLift(
+            constants.lift_ids['left'],
+            constants.lift_ids['right']
+        )
 
         #self.claw = lift.Claw(
         #    constants.claw_id
         #)
 
-        try:
-            self.navx = AHRS.create_spi()
-            self.navx.reset()
-        except Exception as e:
-            print("Caught exception while trying to initialize AHRS: "+e.args)
-            self.navx = None
+        self.imu = IMU(wpilib.SPI.Port.kMXP)
 
     def disabledInit(self):
         # We don't really _need_ to reload configuration in
@@ -53,6 +47,7 @@ class Robot(wpilib.IterativeRobot):
 
     def disabledPeriodic(self):
         self.drivetrain.update_smart_dashboard()
+        self.imu.update_smart_dashboard()
 
     def autonomousInit(self):
         self.drivetrain.load_config_values()
@@ -61,21 +56,27 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousPeriodic(self):
         self.auto.update_smart_dashboard()
+        self.imu.update_smart_dashboard()
+        self.drivetrain.update_smart_dashboard()
+
         self.auto.periodic()
 
     def teleopInit(self):
         self.teleop = Teleop(self, self.control_stick)
         self.drivetrain.load_config_values()
         constants.load_control_config()
-        self.teleop.update_smart_dashboard()
 
     def teleopPeriodic(self):
         # For now: basic driving
         constants.load_control_config()
+
         self.teleop.drive()
         self.teleop.buttons()
+        self.teleop.lift_control()
+
         self.drivetrain.update_smart_dashboard()
         self.teleop.update_smart_dashboard()
+        self.imu.update_smart_dashboard()
 
 
 if __name__ == "__main__":

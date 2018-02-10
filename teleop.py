@@ -14,10 +14,9 @@ class Teleop:
     def __init__(self, robot, control_stick):
         self.robot = robot
         self.stick = control_stick
-        self.navx = self.robot.navx
         self.prefs = wpilib.Preferences.getInstance()
 
-        self.toggle_foc_button = ButtonDebouncer(self.stick, 2)
+        self.toggle_foc_button = ButtonDebouncer(self.stick, 7)
         self.zero_yaw_button = ButtonDebouncer(self.stick, 3)
         self.switch_camera_button = ButtonDebouncer(self.stick, 4)
         self.low_speed_button = ButtonDebouncer(self.stick, 9)
@@ -28,18 +27,8 @@ class Teleop:
             'FOC Enabled', self.foc_enabled
         )
 
-        if self.navx is not None:
-            wpilib.SmartDashboard.putNumber(
-                'Heading',
-                self.navx.getFusedHeading()
-            )
-            wpilib.SmartDashboard.putNumber(
-                'Accumulated Yaw',
-                self.navx.getAngle()
-            )
-
     def buttons(self):
-        if self.navx is not None:
+        if self.robot.imu.is_present():
             if self.zero_yaw_button.get():
                 self.navx.reset()
 
@@ -49,6 +38,20 @@ class Teleop:
         if self.switch_camera_button.get():
             current_camera = (self.prefs.getInt('Selected Camera') + 1) % 1
             self.prefs.putInt('Selected Camera', current_camera)
+
+    def lift_control(self):
+        liftPct = self.stick.getRawAxis(constants.liftAxis)
+
+        if constants.liftInv:
+            liftPct *= -1
+
+        # normalize liftPct to [0, 1]
+        liftPct += 1
+        liftPct /= 2
+
+        tgt_height = liftPct * constants.lift_height
+
+        self.robot.lift.set_height(tgt_height)
 
     def drive(self):
         """
@@ -72,13 +75,9 @@ class Teleop:
             ctrl[1] = 0
             linear_control_active = False
 
-        if (self.navx is not None and
-                self.navx.isConnected() and self.foc_enabled):
+        if (self.robot.imu.is_present() and self.foc_enabled):
             # perform FOC coordinate transform
-            hdg = self.navx.getFusedHeading() * (math.pi / 180)
-
-            if self.prefs.getBoolean('Reverse Heading Direction', False):
-                hdg *= -1
+            hdg = self.robot.imu.get_robot_heading()
 
             # Right-handed passive (alias) transform matrix
             foc_transform = np.array([
@@ -97,7 +96,7 @@ class Teleop:
             tw = 0
             rotation_control_active = False
 
-        tw /= 2
+        tw *= constants.turn_sensitivity
 
         if linear_control_active or rotation_control_active:
             self.last_applied_control = np.array([

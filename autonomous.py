@@ -148,6 +148,8 @@ class Autonomous:
 
         # trigonometry to find the angle, then set the module angles.
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
+        tgt_angle += self.robot.imu.get_robot_heading()
+
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
         self.robot.drivetrain.set_all_module_speeds(0, direct=True)
 
@@ -183,6 +185,7 @@ class Autonomous:
         dist = np.sqrt(np.sum(disp_vec**2))
 
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
+        tgt_angle += self.robot.imu.get_robot_heading()
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
 
         # get the average distance the robot has gone so far
@@ -239,13 +242,9 @@ class Autonomous:
 
         # we are actually going to turn the whole chassis this time, using the
         # navx to ensure we are doing things correctly.
-        self.robot.drivetrain.turn_to_angle(self.robot.navx, tgt_angle)
+        self.robot.drivetrain.turn_to_angle(self.robot.imu, tgt_angle)
 
-        hdg = self.navx.getFusedHeading()
-        prefs = wpilib.Preferences.getInstance()
-
-        if prefs.getBoolean('Reverse Heading Direction', False):
-            hdg *= -1
+        hdg = self.robot.imu.get_robot_heading()
 
         # if we are at the proper angle now, move to the target-drive state.
         if abs(hdg - math.degrees(tgt_angle)) <= self.turn_angle_tolerance:
