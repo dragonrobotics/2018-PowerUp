@@ -28,7 +28,7 @@ from ctre.talonsrx import TalonSRX
 class Claw:
     claw_open_time = 0.5  # time to allow for the claw to open, in seconds
 
-    def __init__(self, talon_id, contact_sensor_channel):
+    def __init__(self, talon_id):
         """
         Create a new instance of the claw subsystem.
 
@@ -43,7 +43,13 @@ class Claw:
         """
         self.talon = TalonSRX(talon_id)
 
-        self.contact_sensor = wpilib.DigitalInput(contact_sensor_channel)
+        # Forward limit switch = claw opening limit switch
+        self.talon.configForwardLimitSwitchSource(
+            TalonSRX.LimitSwitchSource.FeedbackConnector,
+            TalonSRX.LimitSwitchNormal.NormallyOpen,
+            0
+        )
+
         self.state = 'neutral'
 
     def close(self):
@@ -100,7 +106,9 @@ class Claw:
         # touch sensor is depressed, transition to the "closed" state.
         elif self.state == 'closing':
             self.talon.set(TalonSRX.ControlMode.PercentVbus, -1.0)
-            if self.contact_sensor.get():  # contact sensor pressed?
+            fwdLim, revLim = self.talon.getLimitSwitchState()
+            
+            if revLim:  # contact sensor pressed?
                 self.state = 'closed'
 
         # if the state is "closed", use less power to the motors--
