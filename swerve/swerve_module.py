@@ -298,3 +298,13 @@ class SwerveModule(object):
                 self.name+' Drive Percent Output',
                 self.drive_talon.getMotorOutputPercent()
             )
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Drive Current',
+                self.drive_talon.getOutputCurrent()
+            )
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Steer Current',
+                self.steer_talon.getOutputCurrent()
+            )

@@ -29,6 +29,8 @@ class Robot(wpilib.IterativeRobot):
             constants.swerve_config
         )
 
+        self.pdp = wpilib.PowerDistributionPanel(0)
+
         #self.lift = lift.RD4BLift(
         #    constants.lift_ids['left'],
         #    constants.lift_ids['right']
@@ -53,11 +55,27 @@ class Robot(wpilib.IterativeRobot):
         self.drivetrain.load_config_values()
 
     def disabledPeriodic(self):
-        pass
+        self.drivetrain.update_smart_dashboard()
+
+        wpilib.SmartDashboard.putNumber(
+            'Channel 0 Current Draw',
+            self.pdp.getCurrent(0)
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            'Total Current Draw',
+            self.pdp.getTotalCurrent()
+        )
+
+        wpilib.SmartDashboard.putData(
+            'PDP',
+            self.pdp
+        )
 
     def autonomousInit(self):
         self.drivetrain.load_config_values()
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
+        self.auto.periodic()
 
     def autonomousPeriodic(self):
         self.auto.update_smart_dashboard()
@@ -75,6 +93,21 @@ class Robot(wpilib.IterativeRobot):
         self.teleop.buttons()
         self.drivetrain.update_smart_dashboard()
         self.teleop.update_smart_dashboard()
+
+        wpilib.SmartDashboard.putNumber(
+            'Channel 0 Current Draw',
+            self.pdp.getCurrent(0)
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            'Total Current Draw',
+            self.pdp.getTotalCurrent()
+        )
+
+        wpilib.SmartDashboard.putData(
+            'PDP',
+            self.pdp
+        )
 
 
 if __name__ == "__main__":
