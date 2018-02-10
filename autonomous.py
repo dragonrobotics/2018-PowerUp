@@ -31,7 +31,13 @@ from collections import deque
 
 class Autonomous:
     PATHS = {
-        "default": [],
+        "default": [
+            (-24, 0),
+            (-24, 24),
+            (-60, 24),
+            (-60, 0),
+            (0, 0)
+        ],
 
         "1": [
                 # change this
@@ -81,7 +87,7 @@ class Autonomous:
         self.target = None
         self.target_height = 36  # inches -- set this according to target
         self.final_drive_dist = 6  # inches
-        self.robot.drivetrain.rezero_distance()
+        self.robot.drivetrain.reset_drive_position()
 
         # get preferences and the field string from the Game Data API.
         ds = wpilib.DriverStation.getInstance()
@@ -112,16 +118,19 @@ class Autonomous:
         into the turning state.
         """
 
-        self.robot.claw.close()  # put claw into 'closing' state
-        self.robot.lift.set_height(self.init_lift_height)
+        #self.robot.claw.close()  # put claw into 'closing' state
+        #self.robot.lift.set_height(self.init_lift_height)
 
         # if everything is set correctly, transition to the turning state.
-        if (
-            self.robot.claw.state == 'closed'
-            and abs(self.robot.lift.get_height() - self.init_lift_height)
-            <= self.lift_height_tolerance
-        ):
-            self.state = 'turn'
+        #if (
+        #    self.robot.claw.state == 'closed'
+        #    and abs(self.robot.lift.get_height() - self.init_lift_height)
+        #    <= self.lift_height_tolerance
+        #):
+
+        self.robot.drivetrain.set_all_module_angles(0)
+        self.robot.drivetrain.set_all_module_speeds(0, direct=True)
+        self.state = 'turn'
 
     def state_turn(self):
         """
@@ -154,7 +163,7 @@ class Autonomous:
         avg_max_err = np.mean(self.__module_angle_err_window)
 
         if (
-            len(self.__module_angle_err_window) >= self.__angle_err_window.maxlen / 2  # noqa: E501
+            len(self.__module_angle_err_window) >= self.__module_angle_err_window.maxlen  # noqa: E501
             and avg_max_err < self.turn_angle_tolerance
         ):
             self.robot.drivetrain.reset_drive_position()
@@ -178,6 +187,7 @@ class Autonomous:
 
         # get the average distance the robot has gone so far
         avg_dist = np.mean(self.robot.drivetrain.get_module_distances())
+        avg_dist *= (4 * math.pi) / (80 * 6.67)
         self.robot.drivetrain.set_all_module_speeds(self.drive_speed, True)
 
         # is the distance traveled somewhere close to the distance needed to
@@ -283,7 +293,7 @@ class Autonomous:
         """
         # TODO: Only run autonomous if in Drive or Turn states;
         # this is for testing purposes only.
-        if self.state == "drive" or self.state == "turn":
+        if self.state == "init" or self.state == "drive" or self.state == "turn":
             # Call function corresponding to current state.
             self.state_table[self.state](self)
         else:
@@ -294,3 +304,15 @@ class Autonomous:
             'autonomous state',
             self.state
         )
+
+        wpilib.SmartDashboard.putString(
+            'Current Auto Position',
+            str(self.current_pos)
+        )
+
+        if self.active_waypoint_idx < len(self.waypoints):
+            active_waypoint = self.waypoints[self.active_waypoint_idx]
+            wpilib.SmartDashboard.putString(
+                'Active Waypoint',
+                str(active_waypoint)
+            )

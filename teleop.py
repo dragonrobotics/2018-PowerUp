@@ -41,7 +41,7 @@ class Teleop:
     def buttons(self):
         if self.navx is not None:
             if self.zero_yaw_button.get():
-                self.navx.zeroYaw()
+                self.navx.reset()
 
             if self.toggle_foc_button.get():
                 self.foc_enabled = not self.foc_enabled
@@ -93,7 +93,7 @@ class Teleop:
             tw *= -1
 
         rotation_control_active = True
-        if abs(tw) < 0.1:
+        if abs(tw) < 0.15:
             tw = 0
             rotation_control_active = False
 
