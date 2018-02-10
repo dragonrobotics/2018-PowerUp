@@ -49,12 +49,19 @@
 <span class="c1"># Teleop control constants. Can be loaded from Preferences.</span>
 <span class="n">fwdAxis</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Forward/Backward axis</span>
 <span class="n">strAxis</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Left/Right axis</span>
-<span class="n">rcwAxis</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># Rotation axis</span>
+<span class="n">rcwAxis</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># Rotation axis</span>
+
+<span class="n">liftAxis</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># Lift control axis</span>
 
 <span class="n">fwdInv</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Fwd/Bwd axis inverted</span>
 <span class="n">strInv</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># L/R axis inverted</span>
 <span class="n">rcwInv</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Rot axis inverted</span>
+<span class="n">liftInv</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># lift axis inverted</span>
 
+<span class="n">teleop_speed</span> <span class="o">=</span> <span class="mi">370</span>
+<span class="n">turn_sensitivity</span> <span class="o">=</span> <span class="mf">0.25</span>
+
+<span class="n">lift_height</span> <span class="o">=</span> <span class="mi">96</span>  <span class="c1"># inches (== 8 ft)</span>
 
 <span class="c1"># Wraps the Preferences API to provide an alternative to all of the</span>
 <span class="c1"># getInt/getString/getWhatever methods</span>
@@ -90,7 +97,8 @@
 <span class="sd">    Do not call this at module level (otherwise it might try to access parts of</span>
 <span class="sd">    WPILib before they have been initialized).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">global</span> <span class="n">fwdAxis</span><span class="p">,</span> <span class="n">fwdInv</span><span class="p">,</span> <span class="n">strAxis</span><span class="p">,</span> <span class="n">strInv</span><span class="p">,</span> <span class="n">rcwAxis</span><span class="p">,</span> <span class="n">rcwInv</span>
+    <span class="k">global</span> <span class="n">fwdAxis</span><span class="p">,</span> <span class="n">fwdInv</span><span class="p">,</span> <span class="n">strAxis</span><span class="p">,</span> <span class="n">strInv</span><span class="p">,</span> <span class="n">rcwAxis</span><span class="p">,</span> <span class="n">rcwInv</span><span class="p">,</span> <span class="n">teleop_speed</span>
+    <span class="k">global</span> <span class="n">turn_sensitivity</span><span class="p">,</span> <span class="n">liftAxis</span><span class="p">,</span> <span class="n">liftInv</span>
 
     <span class="n">fwdAxis</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Forward-Backward Axis&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">fwdInv</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Fwd-Bwd Axis Inverted&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -98,24 +106,41 @@
     <span class="n">strAxis</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Left-Right Axis&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">strInv</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: L-R Axis Inverted&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">rcwAxis</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Rotation Axis&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">rcwInv</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Rot Axis Inverted&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    <span class="n">rcwAxis</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Rotation Axis&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">rcwInv</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Rot Axis Inverted&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+    <span class="n">liftAxis</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Lift Control Axis&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">liftInv</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Lift Axis Inverted&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">teleop_speed</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span><span class="s1">&#39;Control: Teleop Speed&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mi">370</span><span class="p">)</span>
+    <span class="n">turn_sensitivity</span> <span class="o">=</span> <span class="n">__load_preference</span><span class="p">(</span>
+        <span class="s1">&#39;Control: Turn Sensitivity&#39;</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="mf">0.25</span>
+    <span class="p">)</span></div>
 
 <span class="c1"># Swerve module hardware configuration.</span>
 <span class="c1"># List of tuples of form (&#39;module name&#39;, steer_id, drive_id)</span>
 <span class="c1"># See swerve/swerve_drive.py</span>
 <span class="n">swerve_config</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;Back Right&#39;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;Back Left&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;Front Right&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
-    <span class="p">(</span><span class="s1">&#39;Front Left&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;Back Right&#39;</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;Back Left&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;Front Right&#39;</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;Front Left&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
 <span class="p">]</span>
+
+<span class="c1"># Lift motor contorller CAN IDs. Currently dummy values.</span>
+<span class="n">lift_ids</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="mi">21</span>
+<span class="p">}</span>
+
+<span class="c1"># Claw motor contorller CAN ID(s).</span>
+<span class="n">claw_id</span> <span class="o">=</span> <span class="mi">22</span>
+<span class="n">claw_contact_sensor_channel</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="c1"># Both are in inches, but exact units don&#39;t matter</span>
 <span class="c1"># (as long as both use the same units)</span>
-<span class="n">chassis_length</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="n">chassis_width</span> <span class="o">=</span> <span class="mi">28</span>
+<span class="n">chassis_length</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">chassis_width</span> <span class="o">=</span> <span class="mi">27</span>
 </pre></div>
 
           </div>

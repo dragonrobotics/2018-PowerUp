@@ -44,10 +44,41 @@
   <div class="section" id="module-teleop">
 <span id="teleop-module"></span><h1>teleop module<a class="headerlink" href="#module-teleop" title="Permalink to this headline">¶</a></h1>
 <p>Contains functions for teleop logic.</p>
-<dl class="function">
-<dt id="teleop.drive">
-<code class="descclassname">teleop.</code><code class="descname">drive</code><span class="sig-paren">(</span><em>control_stick</em>, <em>drivetrain</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.drive" title="Permalink to this definition">¶</a></dt>
+<dl class="class">
+<dt id="teleop.Teleop">
+<em class="property">class </em><code class="descclassname">teleop.</code><code class="descname">Teleop</code><span class="sig-paren">(</span><em>robot</em>, <em>control_stick</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="teleop.Teleop.buttons">
+<code class="descname">buttons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.buttons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.buttons" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleop.Teleop.drive">
+<code class="descname">drive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.drive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Drive the robot directly using a joystick.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="teleop.Teleop.foc_enabled">
+<code class="descname">foc_enabled</code><em class="property"> = False</em><a class="headerlink" href="#teleop.Teleop.foc_enabled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="teleop.Teleop.last_applied_control">
+<code class="descname">last_applied_control</code><em class="property"> = array([0, 0, 0])</em><a class="headerlink" href="#teleop.Teleop.last_applied_control" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleop.Teleop.lift_control">
+<code class="descname">lift_control</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.lift_control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.lift_control" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="teleop.Teleop.update_smart_dashboard">
+<code class="descname">update_smart_dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.update_smart_dashboard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.update_smart_dashboard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 </div>
@@ -73,6 +104,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="autonomous.html">autonomous module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver_vision.html">driver_vision module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lift.html">lift package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="physics.html">physics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>

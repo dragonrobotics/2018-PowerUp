@@ -6,6 +6,7 @@
 
    autonomous
    constants
+   driver_vision
    lift
    physics
    robot

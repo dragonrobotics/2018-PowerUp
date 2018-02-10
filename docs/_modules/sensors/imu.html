@@ -1,0 +1,192 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>sensors.imu &#8212; 2018-PowerUp  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for sensors.imu</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">wpilib</span>
+<span class="kn">from</span> <span class="nn">robotpy_ext.common_drivers.navx.ahrs</span> <span class="k">import</span> <span class="n">AHRS</span>
+
+<div class="viewcode-block" id="IMU"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU">[docs]</a><span class="k">class</span> <span class="nc">IMU</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">imu_type</span><span class="o">=</span><span class="s1">&#39;navx&#39;</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="s1">&#39;spi&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">imu_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iface</span> <span class="o">=</span> <span class="n">interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">imu_type</span> <span class="o">==</span> <span class="s1">&#39;navx&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">interface</span> <span class="o">==</span> <span class="s1">&#39;spi&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span> <span class="o">=</span> <span class="n">AHRS</span><span class="o">.</span><span class="n">create_spi</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">interface</span> <span class="o">==</span> <span class="s1">&#39;i2c&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span> <span class="o">=</span> <span class="n">AHRS</span><span class="o">.</span><span class="n">create_i2c</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught exception while trying to initialize AHRS: &quot;</span><span class="o">+</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;IMU types other than NavX are not supported.&#39;</span><span class="p">)</span>  <span class="c1"># noqa: E501</span>
+
+<div class="viewcode-block" id="IMU.is_present"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.is_present">[docs]</a>    <span class="k">def</span> <span class="nf">is_present</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;navx&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span><span class="o">.</span><span class="n">isConnected</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="IMU.set_angle_offset"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.set_angle_offset">[docs]</a>    <span class="k">def</span> <span class="nf">set_angle_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_offset</span> <span class="o">=</span> <span class="n">angle</span></div>
+
+<div class="viewcode-block" id="IMU.get_robot_heading"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.get_robot_heading">[docs]</a>    <span class="k">def</span> <span class="nf">get_robot_heading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">abs_hdg</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;navx&#39;</span><span class="p">:</span>
+            <span class="n">abs_hdg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span><span class="o">.</span><span class="n">getFusedHeading</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
+
+        <span class="n">abs_hdg</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_offset</span>
+
+        <span class="k">if</span> <span class="n">abs_hdg</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">):</span>
+            <span class="n">abs_hdg</span> <span class="o">-=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">abs_hdg</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">abs_hdg</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span><span class="o">.</span><span class="n">getBoolean</span><span class="p">(</span><span class="s1">&#39;Reverse Heading Direction&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">abs_hdg</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">abs_hdg</span></div>
+
+<div class="viewcode-block" id="IMU.get_continuous_heading"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.get_continuous_heading">[docs]</a>    <span class="k">def</span> <span class="nf">get_continuous_heading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">yaw</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;navx&#39;</span><span class="p">:</span>
+            <span class="n">yaw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span><span class="o">.</span><span class="n">getAngle</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span>
+
+        <span class="n">yaw</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_offset</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span><span class="o">.</span><span class="n">getBoolean</span><span class="p">(</span><span class="s1">&#39;Reverse Heading Direction&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">yaw</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">yaw</span></div>
+
+<div class="viewcode-block" id="IMU.get_yaw_rate"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.get_yaw_rate">[docs]</a>    <span class="k">def</span> <span class="nf">get_yaw_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;navx&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__imu</span><span class="o">.</span><span class="n">getRate</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="IMU.update_smart_dashboard"><a class="viewcode-back" href="../../sensors.html#sensors.imu.IMU.update_smart_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">update_smart_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putBoolean</span><span class="p">(</span>
+            <span class="s1">&#39;IMU Present&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_present</span><span class="p">()</span>
+        <span class="p">)</span>
+        
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="s1">&#39;Heading&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_robot_heading</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putNumber</span><span class="p">(</span>
+            <span class="s1">&#39;Accumulated Yaw&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_continuous_heading</span><span class="p">()</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">2018-PowerUp</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">2018-PowerUp</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dragon Robotics.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

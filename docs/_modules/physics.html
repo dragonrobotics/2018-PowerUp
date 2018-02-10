@@ -42,6 +42,11 @@
   <h1>Source code for physics</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">constants</span>
+<span class="kn">from</span> <span class="nn">pyfrc.physics.drivetrains</span> <span class="k">import</span> <span class="n">four_motor_swerve_drivetrain</span>
+
+<span class="c1"># Conversion factor between talon native velocity units and ft/s</span>
+<span class="n">_talon_vel_conv</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">80</span> <span class="o">*</span> <span class="mf">6.67</span> <span class="o">*</span> <span class="mi">12</span><span class="p">)</span>
+<span class="n">_max_speed</span> <span class="o">=</span> <span class="mi">370</span>  <span class="c1"># in talon native units</span>
 
 
 <div class="viewcode-block" id="talon_target"><a class="viewcode-back" href="../physics.html#physics.talon_target">[docs]</a><span class="k">def</span> <span class="nf">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">talon_id</span><span class="p">):</span>
@@ -53,71 +58,16 @@
     <span class="n">hal_data</span><span class="p">[</span><span class="s1">&#39;CAN&#39;</span><span class="p">][</span><span class="n">talon_id</span><span class="p">][</span><span class="s1">&#39;analog_in_position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hal_data</span><span class="p">[</span><span class="s1">&#39;CAN&#39;</span><span class="p">][</span><span class="n">talon_id</span><span class="p">][</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>  <span class="c1"># noqa:E501</span></div>
 
 
-<span class="c1"># pulled from master branch on pyfrc; remove when latest version actually works</span>
-<div class="viewcode-block" id="four_motor_swerve_drivetrain"><a class="viewcode-back" href="../physics.html#physics.four_motor_swerve_drivetrain">[docs]</a><span class="k">def</span> <span class="nf">four_motor_swerve_drivetrain</span><span class="p">(</span>
-    <span class="n">lr_motor</span><span class="p">,</span> <span class="n">rr_motor</span><span class="p">,</span> <span class="n">lf_motor</span><span class="p">,</span> <span class="n">rf_motor</span><span class="p">,</span>
-    <span class="n">lr_angle</span><span class="p">,</span> <span class="n">rr_angle</span><span class="p">,</span> <span class="n">lf_angle</span><span class="p">,</span> <span class="n">rf_angle</span><span class="p">,</span>
-    <span class="n">x_wheelbase</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y_wheelbase</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mi">5</span>
-<span class="p">):</span>
-    <span class="c1"># Calculate speed of each wheel</span>
-    <span class="n">lr</span> <span class="o">=</span> <span class="n">lr_motor</span> <span class="o">*</span> <span class="n">speed</span>
-    <span class="n">rr</span> <span class="o">=</span> <span class="n">rr_motor</span> <span class="o">*</span> <span class="n">speed</span>
-    <span class="n">lf</span> <span class="o">=</span> <span class="n">lf_motor</span> <span class="o">*</span> <span class="n">speed</span>
-    <span class="n">rf</span> <span class="o">=</span> <span class="n">rf_motor</span> <span class="o">*</span> <span class="n">speed</span>
-
-    <span class="c1"># Calculate angle in radians</span>
-    <span class="n">lr_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lr_angle</span><span class="p">)</span>
-    <span class="n">rr_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">rr_angle</span><span class="p">)</span>
-    <span class="n">lf_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lf_angle</span><span class="p">)</span>
-    <span class="n">rf_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">rf_angle</span><span class="p">)</span>
-
-    <span class="c1"># Calculate wheelbase radius</span>
-    <span class="n">wheelbase_radius</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">x_wheelbase</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_wheelbase</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-
-    <span class="c1"># Calculates the Vx and Vy components</span>
-    <span class="c1"># Sin an Cos inverted because forward is 0 on swerve wheels</span>
-    <span class="n">Vx</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lr</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">rr</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lf</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">rf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">rf</span><span class="p">))</span>
-    <span class="n">Vy</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lr</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">rr</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lf</span><span class="p">)</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">rf</span><span class="p">))</span>
-
-    <span class="c1"># Adjusts the angle corresponding to a diameter</span>
-    <span class="c1"># that is perpendicular to the radius (add or subtract 45deg)</span>
-    <span class="n">lr_rad</span> <span class="o">=</span> <span class="p">(</span><span class="n">lr_rad</span> <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-    <span class="n">rr_rad</span> <span class="o">=</span> <span class="p">(</span><span class="n">rr_rad</span> <span class="o">-</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-    <span class="n">lf_rad</span> <span class="o">=</span> <span class="p">(</span><span class="n">lf_rad</span> <span class="o">-</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-    <span class="n">rf_rad</span> <span class="o">=</span> <span class="p">(</span><span class="n">rf_rad</span> <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-
-    <span class="c1"># Finds the rotational velocity by finding the torque and adding them up</span>
-    <span class="n">Vw</span> <span class="o">=</span> <span class="n">wheelbase_radius</span> <span class="o">*</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lr</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rr_rad</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="n">rr</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">lf</span><span class="p">)</span>
-            <span class="o">+</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">rf_rad</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="n">rf</span><span class="p">))</span>
-
-    <span class="n">Vx</span> <span class="o">*=</span> <span class="mf">0.25</span>
-    <span class="n">Vy</span> <span class="o">*=</span> <span class="mf">0.25</span>
-    <span class="n">Vw</span> <span class="o">*=</span> <span class="mf">0.25</span>
-
-    <span class="k">return</span> <span class="n">Vx</span><span class="p">,</span> <span class="n">Vy</span><span class="p">,</span> <span class="n">Vw</span></div>
-
-
 <div class="viewcode-block" id="PhysicsEngine"><a class="viewcode-back" href="../physics.html#physics.PhysicsEngine">[docs]</a><span class="k">class</span> <span class="nc">PhysicsEngine</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">physics_controller</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_controller</span> <span class="o">=</span> <span class="n">physics_controller</span>
 
 <div class="viewcode-block" id="PhysicsEngine.update_sim"><a class="viewcode-back" href="../physics.html#physics.PhysicsEngine.update_sim">[docs]</a>    <span class="k">def</span> <span class="nf">update_sim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hal_data</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">tm_diff</span><span class="p">):</span>
         <span class="n">module_speeds</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span>
-            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span>
-            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span>
-            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span>
+            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">_max_speed</span><span class="p">,</span>
+            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">_max_speed</span><span class="p">,</span>
+            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">_max_speed</span><span class="p">,</span>
+            <span class="n">talon_target</span><span class="p">(</span><span class="n">hal_data</span><span class="p">,</span> <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">_max_speed</span>
         <span class="p">]</span>
 
         <span class="n">module_angles</span> <span class="o">=</span> <span class="p">[</span>
@@ -132,7 +82,7 @@
             <span class="o">*</span><span class="n">module_angles</span><span class="p">,</span>
             <span class="n">constants</span><span class="o">.</span><span class="n">chassis_length</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span>
             <span class="n">constants</span><span class="o">.</span><span class="n">chassis_width</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span>
-            <span class="mi">14</span>
+            <span class="n">_max_speed</span> <span class="o">*</span> <span class="n">_talon_vel_conv</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">physics_controller</span><span class="o">.</span><span class="n">vector_drive</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">tm_diff</span><span class="p">)</span>

@@ -43,41 +43,129 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Contains functions for teleop logic.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">wpilib</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">constants</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">robotpy_ext.control.button_debouncer</span> <span class="k">import</span> <span class="n">ButtonDebouncer</span>
 
+<div class="viewcode-block" id="Teleop"><a class="viewcode-back" href="../teleop.html#teleop.Teleop">[docs]</a><span class="k">class</span> <span class="nc">Teleop</span><span class="p">:</span>
+    <span class="n">last_applied_control</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">foc_enabled</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="drive"><a class="viewcode-back" href="../teleop.html#teleop.drive">[docs]</a><span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="n">control_stick</span><span class="p">,</span> <span class="n">drivetrain</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Drive the robot directly using a joystick.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ctrl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-        <span class="n">control_stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">fwdAxis</span><span class="p">),</span>
-        <span class="n">control_stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">strAxis</span><span class="p">)</span>
-    <span class="p">])</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">control_stick</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stick</span> <span class="o">=</span> <span class="n">control_stick</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">fwdInv</span><span class="p">:</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_foc_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zero_yaw_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switch_camera_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low_speed_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_speed_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">strInv</span><span class="p">:</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+<div class="viewcode-block" id="Teleop.update_smart_dashboard"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.update_smart_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">update_smart_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putBoolean</span><span class="p">(</span>
+            <span class="s1">&#39;FOC Enabled&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">foc_enabled</span>
+        <span class="p">)</span></div>
 
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ctrl</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="viewcode-block" id="Teleop.buttons"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.buttons">[docs]</a>    <span class="k">def</span> <span class="nf">buttons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">is_present</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_yaw_button</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">navx</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-    <span class="n">tw</span> <span class="o">=</span> <span class="n">control_stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">rcwAxis</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">rcwInv</span><span class="p">:</span>
-        <span class="n">tw</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">toggle_foc_button</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">foc_enabled</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">foc_enabled</span>
 
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tw</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
-        <span class="n">tw</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">switch_camera_button</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+            <span class="n">current_camera</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefs</span><span class="o">.</span><span class="n">getInt</span><span class="p">(</span><span class="s1">&#39;Selected Camera&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span><span class="o">.</span><span class="n">putInt</span><span class="p">(</span><span class="s1">&#39;Selected Camera&#39;</span><span class="p">,</span> <span class="n">current_camera</span><span class="p">)</span></div>
 
-    <span class="n">drivetrain</span><span class="o">.</span><span class="n">drive</span><span class="p">(</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="n">tw</span>
-    <span class="p">)</span></div>
+<div class="viewcode-block" id="Teleop.lift_control"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.lift_control">[docs]</a>    <span class="k">def</span> <span class="nf">lift_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">liftPct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">liftAxis</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">liftInv</span><span class="p">:</span>
+            <span class="n">liftPct</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># normalize liftPct to [0, 1]</span>
+        <span class="n">liftPct</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">liftPct</span> <span class="o">/=</span> <span class="mi">2</span>
+
+        <span class="n">tgt_height</span> <span class="o">=</span> <span class="n">liftPct</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">lift_height</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">lift</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="n">tgt_height</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Teleop.drive"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.drive">[docs]</a>    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drive the robot directly using a joystick.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ctrl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">fwdAxis</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">strAxis</span><span class="p">)</span>
+        <span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">fwdInv</span><span class="p">:</span>
+            <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">strInv</span><span class="p">:</span>
+            <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">linear_control_active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ctrl</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+            <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">linear_control_active</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">is_present</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">foc_enabled</span><span class="p">):</span>
+            <span class="c1"># perform FOC coordinate transform</span>
+            <span class="n">hdg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">get_robot_heading</span><span class="p">()</span>
+
+            <span class="c1"># Right-handed passive (alias) transform matrix</span>
+            <span class="n">foc_transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hdg</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">hdg</span><span class="p">)],</span>
+                <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">hdg</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hdg</span><span class="p">)]</span>
+            <span class="p">])</span>
+
+            <span class="n">ctrl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">foc_transform</span><span class="p">,</span> <span class="n">ctrl</span><span class="p">))</span>
+
+        <span class="n">tw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">rcwAxis</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">rcwInv</span><span class="p">:</span>
+            <span class="n">tw</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">rotation_control_active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tw</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.15</span><span class="p">:</span>
+            <span class="n">tw</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">rotation_control_active</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">tw</span> <span class="o">*=</span> <span class="n">constants</span><span class="o">.</span><span class="n">turn_sensitivity</span>
+
+        <span class="k">if</span> <span class="n">linear_control_active</span> <span class="ow">or</span> <span class="n">rotation_control_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_applied_control</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">tw</span>
+            <span class="p">])</span>
+
+            <span class="n">speed_coefficient</span> <span class="o">=</span> <span class="mf">0.75</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">low_speed_button</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                <span class="n">speed_coefficient</span> <span class="o">=</span> <span class="mf">0.25</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_speed_button</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+                <span class="n">speed_coefficient</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">drive</span><span class="p">(</span>
+                <span class="n">ctrl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">speed_coefficient</span><span class="p">,</span>
+                <span class="n">ctrl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">speed_coefficient</span><span class="p">,</span>
+                <span class="n">tw</span> <span class="o">*</span> <span class="n">speed_coefficient</span><span class="p">,</span>
+                <span class="n">max_wheel_speed</span><span class="o">=</span><span class="n">constants</span><span class="o">.</span><span class="n">teleop_speed</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">drive</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_applied_control</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_applied_control</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">last_applied_control</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">max_wheel_speed</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
