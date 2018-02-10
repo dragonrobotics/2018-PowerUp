@@ -1,14 +1,13 @@
 from networktables import NetworkTables
 import cscore
 import time
-import numpy as np
-import math
 
 # tuples are (camera_name, camera_device_id)
 cameras = [
     ('Camera 1', 0),
-    #('Camera 2', 1),
+    # ('Camera 2', 1),
 ]
+
 
 def main():
     cs_instance = cscore.CameraServer.getInstance()
@@ -30,7 +29,7 @@ def main():
         camera_obj.setFPS(fps)
 
         camera_objects.append(camera_obj)
-        #camera_chooser.addDefault(name, cam_idx)
+        # camera_chooser.addDefault(name, cam_idx)
 
     cam_server = cs_instance.addServer(name='camera_server')
     current_selected = int(table.getNumber('Selected Camera', 0))

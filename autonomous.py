@@ -75,11 +75,11 @@ class Autonomous:
     # Internal code starts here.
     ##################################################################
 
-    turn_angle_tolerance = 2.5 #: a tolerance range for turning, in degrees.
-    drive_dist_tolerance = 3 #: a tolerance range for driving, in inches.
-    lift_height_tolerance = 2 #: a tolerance range for lifting, in inches.
-    drive_speed = 100 #: how fast to drive, in native units per 100ms
-    init_lift_height = 6 #: initial lift height, in inches above the ground.
+    turn_angle_tolerance = 2.5  #: a tolerance range for turning, in degrees.
+    drive_dist_tolerance = 3  #: a tolerance range for driving, in inches.
+    lift_height_tolerance = 2  #: a tolerance range for lifting, in inches.
+    drive_speed = 100  #: how fast to drive, in native units per 100ms
+    init_lift_height = 6  #: initial lift height, in inches above the ground.
 
     def __init__(self, robot, robot_position):
         """
@@ -127,15 +127,15 @@ class Autonomous:
         into the turning state.
         """
 
-        #self.robot.claw.close()  # put claw into 'closing' state
-        #self.robot.lift.set_height(self.init_lift_height)
+        # self.robot.claw.close()  # put claw into 'closing' state
+        # self.robot.lift.set_height(self.init_lift_height)
 
         # if everything is set correctly, transition to the turning state.
-        #if (
+        # if (
         #    self.robot.claw.state == 'closed'
         #    and abs(self.robot.lift.get_height() - self.init_lift_height)
         #    <= self.lift_height_tolerance
-        #):
+        # ):
 
         self.robot.drivetrain.set_all_module_angles(0)
         self.robot.drivetrain.set_all_module_speeds(0, direct=True)
@@ -282,7 +282,6 @@ class Autonomous:
         self.robot.drivetrain.set_all_module_speeds(0, True)
         self.robot.claw.open()
 
-
     #: Maps state names to functions.
     state_table = {
         'init': state_init,
@@ -300,7 +299,11 @@ class Autonomous:
         """
         # TODO: Only run autonomous if in Drive or Turn states;
         # this is for testing purposes only.
-        if self.state == "init" or self.state == "drive" or self.state == "turn":
+        if (
+            self.state == "init" or
+            self.state == "drive" or
+            self.state == "turn"
+        ):
             # Call function corresponding to current state.
             self.state_table[self.state](self)
         else:

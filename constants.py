@@ -5,19 +5,20 @@ and frame dimensions.
 import wpilib
 
 # Teleop control constants. Can be loaded from Preferences.
-fwdAxis = 1 #: Forward/Backward axis
-strAxis = 0 #: Left/Right axis
-rcwAxis = 2 #: Rotation axis
-liftAxis = 3 #: Lift control axis
-fwdInv = True #: Fwd/Bwd axis inverted
-strInv = True #: L/R axis inverted
-rcwInv = True #: Rot axis inverted
-liftInv = True #: lift axis inverted
+fwdAxis = 1  #: Forward/Backward axis
+strAxis = 0  #: Left/Right axis
+rcwAxis = 2  #: Rotation axis
+liftAxis = 3  #: Lift control axis
+fwdInv = True  #: Fwd/Bwd axis inverted
+strInv = True  #: L/R axis inverted
+rcwInv = True  #: Rot axis inverted
+liftInv = True  #: lift axis inverted
 
 teleop_speed = 370
 turn_sensitivity = 0.25
 
 lift_height = 96  # inches (== 8 ft)
+
 
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
@@ -72,6 +73,7 @@ def load_control_config():
     turn_sensitivity = __load_preference(
         'Control: Turn Sensitivity', backup=0.25
     )
+
 
 #: Swerve module hardware configuration.
 #: List of tuples of form ('module name', steer_id, drive_id)

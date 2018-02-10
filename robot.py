@@ -6,6 +6,7 @@ from teleop import Teleop
 from autonomous import Autonomous
 from sensors.imu import IMU
 
+
 class Robot(wpilib.IterativeRobot):
     def robotInit(self):
         constants.load_control_config()
@@ -33,9 +34,9 @@ class Robot(wpilib.IterativeRobot):
             constants.lift_ids['right']
         )
 
-        #self.claw = lift.Claw(
+        # self.claw = lift.Claw(
         #    constants.claw_id
-        #)
+        # )
 
         self.imu = IMU(wpilib.SPI.Port.kMXP)
 
