@@ -45,12 +45,86 @@
 <span id="constants-module"></span><h1>constants module<a class="headerlink" href="#module-constants" title="Permalink to this headline">¶</a></h1>
 <p>Contains constants relating to robot configuration; for example, Talon CAN IDs
 and frame dimensions.</p>
+<dl class="data">
+<dt id="constants.chassis_length">
+<code class="descclassname">constants.</code><code class="descname">chassis_length</code><a class="headerlink" href="#constants.chassis_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>The length of the chassis (units do not matter as long as they match)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.chassis_width">
+<code class="descclassname">constants.</code><code class="descname">chassis_width</code><a class="headerlink" href="#constants.chassis_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>The width of the chassis (units do not matter as long as they match)</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.fwdAxis">
+<code class="descclassname">constants.</code><code class="descname">fwdAxis</code><a class="headerlink" href="#constants.fwdAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward/Backward axis</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.fwdInv">
+<code class="descclassname">constants.</code><code class="descname">fwdInv</code><a class="headerlink" href="#constants.fwdInv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fwd/Bwd axis inverted</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.liftAxis">
+<code class="descclassname">constants.</code><code class="descname">liftAxis</code><a class="headerlink" href="#constants.liftAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lift control axis</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.liftInv">
+<code class="descclassname">constants.</code><code class="descname">liftInv</code><a class="headerlink" href="#constants.liftInv" title="Permalink to this definition">¶</a></dt>
+<dd><p>lift axis inverted</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.lift_ids">
+<code class="descclassname">constants.</code><code class="descname">lift_ids</code><a class="headerlink" href="#constants.lift_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lift motor contorller CAN IDs. Currently dummy values.</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="constants.load_control_config">
 <code class="descclassname">constants.</code><code class="descname">load_control_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/constants.html#load_control_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#constants.load_control_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load configurable constants using the Robot Preferences API.
 Do not call this at module level (otherwise it might try to access parts of
 WPILib before they have been initialized).</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.rcwAxis">
+<code class="descclassname">constants.</code><code class="descname">rcwAxis</code><a class="headerlink" href="#constants.rcwAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation axis</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.rcwInv">
+<code class="descclassname">constants.</code><code class="descname">rcwInv</code><a class="headerlink" href="#constants.rcwInv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rot axis inverted</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.strAxis">
+<code class="descclassname">constants.</code><code class="descname">strAxis</code><a class="headerlink" href="#constants.strAxis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Left/Right axis</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.strInv">
+<code class="descclassname">constants.</code><code class="descname">strInv</code><a class="headerlink" href="#constants.strInv" title="Permalink to this definition">¶</a></dt>
+<dd><p>L/R axis inverted</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="constants.swerve_config">
+<code class="descclassname">constants.</code><code class="descname">swerve_config</code><a class="headerlink" href="#constants.swerve_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Swerve module hardware configuration.
+List of tuples of form (‘module name’, steer_id, drive_id)
+See swerve/swerve_drive.py</p>
 </dd></dl>
 
 </div>
@@ -117,7 +191,7 @@ WPILib before they have been initialized).</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

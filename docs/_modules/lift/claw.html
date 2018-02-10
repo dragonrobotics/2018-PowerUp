@@ -41,26 +41,25 @@
             
   <h1>Source code for lift.claw</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">@file claw.py</span>
-<span class="sd">Code for the claw subsystem</span>
+<span class="sd">Code for the claw subsystem.</span>
 
 <span class="sd">This file contains code for the claw, which is implemented as a finite-state</span>
 <span class="sd">automaton with these states:</span>
 
-<span class="sd">- ``neutral``: the claw is fully open and not in action.</span>
-<span class="sd">- ``closing``: the claw is transitioning from the &quot;neutral&quot; state to the</span>
+<span class="sd">- **neutral**: the claw is fully open and not in action.</span>
+<span class="sd">- **closing**: the claw is transitioning from the &quot;neutral&quot; state to the</span>
 <span class="sd">  &quot;closed&quot; state.</span>
-<span class="sd">- ``closed``: the claw is in the closed position, but still exerting light</span>
+<span class="sd">- **closed**: the claw is in the closed position, but still exerting light</span>
 <span class="sd">  pressure to maintain grip on the cube.</span>
-<span class="sd">- ``opening``: the claw is transitioning from the &quot;closed&quot; state to the</span>
+<span class="sd">- **opening**: the claw is transitioning from the &quot;closed&quot; state to the</span>
 <span class="sd">  &quot;neutral&quot; state.</span>
-<span class="sd">- ``manual_ctrl``: a disconnected state from the other four; used when the</span>
+<span class="sd">- **manual_ctrl**: a disconnected state from the other four; used when the</span>
 <span class="sd">  driver wants full control over the claw without assistance</span>
 <span class="sd">  from the state automaton.</span>
 
-<span class="sd">@author Brandon Gong, Sebastian Mobo</span>
-<span class="sd">@version 0.0.1</span>
-<span class="sd">@date January 19, 2018</span>
+<span class="sd">:Authors: Brandon Gong, Sebastian Mobo</span>
+<span class="sd">:Version: 0.0.1</span>
+<span class="sd">:Date: January 19, 2018</span>
 <span class="sd"> &quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">wpilib</span>
@@ -68,7 +67,15 @@
 
 
 <div class="viewcode-block" id="Claw"><a class="viewcode-back" href="../../lift.html#lift.claw.Claw">[docs]</a><span class="k">class</span> <span class="nc">Claw</span><span class="p">:</span>
-    <span class="n">claw_open_time</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># time to allow for the claw to open, in seconds</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implements a finite-state automaton for manipulating the claw.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        talon_id: the ID number of the talon on the claw.</span>
+<span class="sd">        contact_sensor_channel: the channel that the contact sensor is</span>
+<span class="sd">            connected to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">claw_open_time</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1">#: time to allow for the claw to open, in seconds</span>
     <span class="n">claw_adjust_time</span> <span class="o">=</span> <span class="mf">0.25</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">talon_id</span><span class="p">):</span>
@@ -78,11 +85,6 @@
 <span class="sd">        This function constructs and configures the CANTalon instance and the</span>
 <span class="sd">        touch sensor. It also sets the state machine to the neutral starting</span>
 <span class="sd">        state.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            talon_id: the ID number of the talon on the claw.</span>
-<span class="sd">            contact_sensor_channel: the channel that the contact sensor is</span>
-<span class="sd">                                    connected to.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">talon</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="p">(</span><span class="n">talon_id</span><span class="p">)</span>
 
@@ -227,7 +229,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

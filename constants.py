@@ -5,16 +5,14 @@ and frame dimensions.
 import wpilib
 
 # Teleop control constants. Can be loaded from Preferences.
-fwdAxis = 1  # Forward/Backward axis
-strAxis = 0  # Left/Right axis
-rcwAxis = 2  # Rotation axis
-
-liftAxis = 3  # Lift control axis
-
-fwdInv = True  # Fwd/Bwd axis inverted
-strInv = True  # L/R axis inverted
-rcwInv = True  # Rot axis inverted
-liftInv = True  # lift axis inverted
+fwdAxis = 1 #: Forward/Backward axis
+strAxis = 0 #: Left/Right axis
+rcwAxis = 2 #: Rotation axis
+liftAxis = 3 #: Lift control axis
+fwdInv = True #: Fwd/Bwd axis inverted
+strInv = True #: L/R axis inverted
+rcwInv = True #: Rot axis inverted
+liftInv = True #: lift axis inverted
 
 teleop_speed = 370
 turn_sensitivity = 0.25
@@ -75,9 +73,9 @@ def load_control_config():
         'Control: Turn Sensitivity', backup=0.25
     )
 
-# Swerve module hardware configuration.
-# List of tuples of form ('module name', steer_id, drive_id)
-# See swerve/swerve_drive.py
+#: Swerve module hardware configuration.
+#: List of tuples of form ('module name', steer_id, drive_id)
+#: See swerve/swerve_drive.py
 swerve_config = [
     ('Back Right', 11, 10),
     ('Back Left', 9, 8),
@@ -85,17 +83,18 @@ swerve_config = [
     ('Front Left', 5, 4),
 ]
 
-# Lift motor contorller CAN IDs. Currently dummy values.
+#: Lift motor contorller CAN IDs. Currently dummy values.
 lift_ids = {
     'left': 20,
     'right': 21
 }
 
-# Claw motor contorller CAN ID(s).
+# Claw motor controller CAN ID(s).
 claw_id = 22
 claw_contact_sensor_channel = 1
 
-# Both are in inches, but exact units don't matter
-# (as long as both use the same units)
+#: The length of the chassis (units do not matter as long as they match)
 chassis_length = 24
+
+#: The width of the chassis (units do not matter as long as they match)
 chassis_width = 27
