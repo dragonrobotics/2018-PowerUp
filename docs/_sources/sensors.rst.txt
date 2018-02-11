@@ -4,6 +4,14 @@ sensors package
 Submodules
 ----------
 
+sensors\.imu module
+-------------------
+
+.. automodule:: sensors.imu
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sensors\.sensorconstants module
 -------------------------------
 

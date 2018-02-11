@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="physics module" href="physics.html" />
-    <link rel="prev" title="constants module" href="constants.html" />
+    <link rel="prev" title="driver_vision module" href="driver_vision.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -48,42 +48,70 @@
 </div>
 <div class="section" id="module-lift.claw">
 <span id="lift-claw-module"></span><h2>lift.claw module<a class="headerlink" href="#module-lift.claw" title="Permalink to this headline">¶</a></h2>
-<p>&#64;file claw.py
-Code for the claw subsystem</p>
+<p>Code for the claw subsystem.</p>
 <p>This file contains code for the claw, which is implemented as a finite-state
 automaton with these states:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">neutral</span></code>: the claw is fully open and not in action.</li>
-<li><code class="docutils literal"><span class="pre">closing</span></code>: the claw is transitioning from the “neutral” state to the “closed”
-state.</li>
-<li><code class="docutils literal"><span class="pre">closed</span></code>: the claw is in the closed position, but still exerting light
+<li><strong>neutral</strong>: the claw is fully open and not in action.</li>
+<li><strong>closing</strong>: the claw is transitioning from the “neutral” state to the
+“closed” state.</li>
+<li><strong>closed</strong>: the claw is in the closed position, but still exerting light
 pressure to maintain grip on the cube.</li>
-<li><code class="docutils literal"><span class="pre">opening</span></code>: the claw is transitioning from the “closed” state to the
+<li><strong>opening</strong>: the claw is transitioning from the “closed” state to the
 “neutral” state.</li>
-<li><code class="docutils literal"><span class="pre">manual_ctrl</span></code>: a disconnected state from the other four; used when the
+<li><strong>manual_ctrl</strong>: a disconnected state from the other four; used when the
 driver wants full control over the claw without assistance
 from the state automaton.</li>
 </ul>
-<p>&#64;author Brandon Gong, Sebastian Mobo
-&#64;version 0.0.1
-&#64;date January 19, 2018</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">Brandon Gong, Sebastian Mobo</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">0.0.1</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Date:</th><td class="field-body">January 19, 2018</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="lift.claw.Claw">
-<em class="property">class </em><code class="descclassname">lift.claw.</code><code class="descname">Claw</code><span class="sig-paren">(</span><em>talon_id</em>, <em>contact_sensor_channel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">lift.claw.</code><code class="descname">Claw</code><span class="sig-paren">(</span><em>talon_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Implements a finite-state automaton for manipulating the claw.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>talon_id</strong> – the ID number of the talon on the claw.</li>
+<li><strong>contact_sensor_channel</strong> – the channel that the contact sensor is
+connected to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="lift.claw.Claw.claw_adjust_time">
+<code class="descname">claw_adjust_time</code><em class="property"> = 0.25</em><a class="headerlink" href="#lift.claw.Claw.claw_adjust_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="attribute">
 <dt id="lift.claw.Claw.claw_open_time">
 <code class="descname">claw_open_time</code><em class="property"> = 0.5</em><a class="headerlink" href="#lift.claw.Claw.claw_open_time" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>time to allow for the claw to open, in seconds</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="lift.claw.Claw.close">
 <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/claw.html#Claw.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.claw.Claw.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the claw.</p>
-<p>This function does a quick check to make sure it is a valid state change
-before actually changing the state to “closing”.
-For example you cannot set the state to “closing” if the claw is already
-gripping the cube.</p>
+<p>This function does a quick check to make sure it is a valid state
+change before actually changing the state to “closing”.
+For example you cannot set the state to “closing” if the claw is
+already gripping the cube.</p>
 </dd></dl>
 
 <dl class="method">
@@ -113,22 +141,46 @@ machine.</p>
 </div>
 <div class="section" id="module-lift.lift">
 <span id="lift-lift-module"></span><h2>lift.lift module<a class="headerlink" href="#module-lift.lift" title="Permalink to this headline">¶</a></h2>
-<p>&#64;file lift.py
-Code for the RD4B subsystem</p>
+<p>Code for the RD4B subsystem.</p>
 <p>This file contains code for the RD4B lift subsystem, including helper functions
 to make working with the lift easier from both autonomous and teleop control
 modes.  It also has functionality for reading config values from Preferences.</p>
-<p>&#64;author Brandon Gong
-&#64;version 0.0.1
-&#64;date January 19, 2018</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Brandon Gong</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">0.0.1</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Date:</th><td class="field-body">January 19, 2018</td>
+</tr>
+</tbody>
+</table>
 <dl class="class">
 <dt id="lift.lift.RD4BLift">
 <em class="property">class </em><code class="descclassname">lift.lift.</code><code class="descname">RD4BLift</code><span class="sig-paren">(</span><em>left_id</em>, <em>right_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This class contains helper functions for manipulating the position of the
+RD4B lift.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>left_id</strong> – the ID number of the left talon.</li>
+<li><strong>right_id</strong> – the ID number of the right talon.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="lift.lift.RD4BLift.ARM_LENGTH">
 <code class="descname">ARM_LENGTH</code><em class="property"> = 30</em><a class="headerlink" href="#lift.lift.RD4BLift.ARM_LENGTH" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Length for one segment of the arm. As of the time this comment
+was written a segment is 30 inches long.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="lift.lift.RD4BLift.fully_extend">
@@ -190,8 +242,8 @@ The necessary keys that need to be defined are:</p>
 <li>“lift potentiometer base angle”</li>
 <li>“lift limit up”</li>
 </ul>
-<p>This function also precalculates values that are used throughout the code
-and sets soft limits for the motor based on encoder values.</p>
+<p>This function also precalculates values that are used throughout the
+code and sets soft limits for the motor based on encoder values.</p>
 </dd></dl>
 
 <dl class="method">
@@ -251,6 +303,7 @@ breaking, but it can also be used for general purposes if needed.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="autonomous.html">autonomous module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver_vision.html">driver_vision module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">lift package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-lift.claw">lift.claw module</a></li>
@@ -273,7 +326,7 @@ breaking, but it can also be used for general purposes if needed.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="modules.html">2018-PowerUp</a><ul>
-      <li>Previous: <a href="constants.html" title="previous chapter">constants module</a></li>
+      <li>Previous: <a href="driver_vision.html" title="previous chapter">driver_vision module</a></li>
       <li>Next: <a href="physics.html" title="next chapter">physics module</a></li>
   </ul></li>
   </ul></li>
@@ -297,7 +350,7 @@ breaking, but it can also be used for general purposes if needed.</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

@@ -91,7 +91,7 @@ class SwerveDrive(object):
         for module, angle, speed in zip(self.modules, angles, speeds):
             module.apply_control_values(angle, speed * max_wheel_speed, True)
 
-    def turn_to_angle(self, navx, target_angle):
+    def turn_to_angle(self, imu, target_angle):
         prefs = wpilib.Preferences.getInstance()
 
         min_wheel_speed = prefs.getFloat('Turn Min Wheel Speed', 25)
@@ -100,15 +100,14 @@ class SwerveDrive(object):
         kD = prefs.getFloat('Turn kD', 5)
         tol = prefs.getFloat('Turn Error Tolerance', 1)
 
-        hdg = math.radians(navx.getAngle())
+        hdg = imu.get_continuous_heading()
         n_rotations = math.trunc(hdg / (2*math.pi))
-        rate = navx.getRate() * (math.pi / 180)
+        rate = imu.get_yaw_rate() * (math.pi / 180)
 
         target_angle += (n_rotations * 2 * math.pi)
 
         prefs = wpilib.Preferences.getInstance()
         if prefs.getBoolean('Reverse Heading Direction', False):
-            hdg *= -1
             target_angle += math.pi
 
         err = target_angle - hdg

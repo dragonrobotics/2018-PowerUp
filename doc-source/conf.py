@@ -190,3 +190,11 @@ intersphinx_mapping = {
     'pyfrc': ('https://pyfrc.readthedocs.io/en/stable/', None),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None)
 }
+
+from sphinx.ext.autodoc import ModuleLevelDocumenter, DataDocumenter
+
+def add_directive_header(self, sig):
+    ModuleLevelDocumenter.add_directive_header(self, sig)
+    # Rest of original method ignored
+
+DataDocumenter.add_directive_header = add_directive_header

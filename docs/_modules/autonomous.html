@@ -40,61 +40,337 @@
           <div class="body" role="main">
             
   <h1>Source code for autonomous</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot; collection of functions used to manage autonomous control &quot;&quot;&quot;</span>
-<span class="c1"># from vision.visionmaster import VisionMaster</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Autonomous module.</span>
+
+<span class="sd">This module contains classes and functions for autonomous, which is designed as</span>
+<span class="sd">a finite-state automaton updated per tick in autonomousPeriodic.</span>
+
+<span class="sd">Autonomous transitions between these states:</span>
+
+<span class="sd">    - **init**: The robot closes the claw, fully lowers the lift, and</span>
+<span class="sd">      transitions onto the **turn** state to angle toward the next waypoint.</span>
+<span class="sd">    - **turn**: The swerve modules (not the entire chassis) angle toward the</span>
+<span class="sd">      next waypoint, then transitions into the drive state</span>
+<span class="sd">    - **drive**: The robot drives over to the next waypoint, then transitions</span>
+<span class="sd">      into the turning state or the lifting state if there are no other</span>
+<span class="sd">      waypoints.</span>
+<span class="sd">    - **lift**: the RD4B lifts to a predetermined height (either the height of</span>
+<span class="sd">      the scale or switch), then transitions to the target states.</span>
+<span class="sd">    - **target-turn**: Turns the entire chassis towards the target (either the</span>
+<span class="sd">      switch or the scale).</span>
+<span class="sd">    - **target-drive**: Drives the robot towards the target. This differs</span>
+<span class="sd">      slightly from the normal **drive** state because it uses sensors to be</span>
+<span class="sd">      more accurate.</span>
+<span class="sd">    - **drop**: The claw opens.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">wpilib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
 
 
 <div class="viewcode-block" id="Autonomous"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous">[docs]</a><span class="k">class</span> <span class="nc">Autonomous</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; Instantiate this from autonomousInit or robotInit. &quot;&quot;&quot;</span>
-    <span class="n">UNKNOWN</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">LEFT</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">MIDDLE</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">RIGHT</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class implements a finite-state automaton for controlling autonomous.</span>
+<span class="sd">    Also, this class includes a way to input waypoint coordinates into a</span>
+<span class="sd">    a template to be automatically selected and formatted as necessary.</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot_location</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">robot_location</span> <span class="o">=</span> <span class="n">robot_location</span>  <span class="c1"># set on SmartDashboard</span>
-        <span class="c1"># self.vision = VisionMaster(&#39;0.0.0.0&#39;, 2)</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">        robot: the robot instance.</span>
+<span class="sd">        robot_position: the position of the robot on the field.</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Dictionary of paths (arrays of waypoints).  The right one is chosen</span>
+    <span class="c1">#: at runtime.</span>
+    <span class="n">PATHS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">(</span><span class="o">-</span><span class="mi">24</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="o">-</span><span class="mi">24</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+            <span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+            <span class="p">(</span><span class="o">-</span><span class="mi">60</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">],</span>
+
+        <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="c1"># change this</span>
+                <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">40</span><span class="p">),</span>
+                <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">),</span>
+                <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+                <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+             <span class="p">],</span>
+
+        <span class="s2">&quot;2&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="c1"># add waypoints here.</span>
+             <span class="p">],</span>
+
+        <span class="s2">&quot;3&quot;</span><span class="p">:</span> <span class="p">[]</span>  <span class="c1"># etc</span>
+    <span class="p">}</span>
+
+    <span class="c1">##################################################################</span>
+    <span class="c1"># Internal code starts here.</span>
+    <span class="c1">##################################################################</span>
+
+    <span class="n">turn_angle_tolerance</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="c1">#: a tolerance range for turning, in degrees.</span>
+    <span class="n">drive_dist_tolerance</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1">#: a tolerance range for driving, in inches.</span>
+    <span class="n">lift_height_tolerance</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#: a tolerance range for lifting, in inches.</span>
+    <span class="n">drive_speed</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1">#: how fast to drive, in native units per 100ms</span>
+    <span class="n">init_lift_height</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1">#: initial lift height, in inches above the ground.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">robot_position</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize autonomous.</span>
+
+<span class="sd">        This constructor mainly initializes the software.</span>
+<span class="sd">        The correct path is chosen from SmartDashboard and initialized into</span>
+<span class="sd">        numpy-based waypoints.  The current position is set.  Then, the state</span>
+<span class="sd">        is set to &#39;init&#39; and physical initializations are done there.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># basic initalization.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_height</span> <span class="o">=</span> <span class="mi">36</span>  <span class="c1"># inches -- set this according to target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_drive_dist</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># inches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">reset_drive_position</span><span class="p">()</span>
+
+        <span class="c1"># get preferences and the field string from the Game Data API.</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">DriverStation</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
         <span class="n">field_string</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">getGameSpecificMessage</span><span class="p">()</span>
+        <span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">close_switch</span> <span class="o">=</span> <span class="n">field_string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">field_string</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">far_switch</span> <span class="o">=</span> <span class="n">field_string</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">field_string</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>  <span class="c1"># this only happens during tests</span>
+            <span class="n">field_string</span> <span class="o">=</span> <span class="s1">&#39;LLL&#39;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Get the corresponding path of the given field string from preferences</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PATHS</span><span class="p">[</span><span class="n">prefs</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="n">field_string</span><span class="p">,</span> <span class="n">backup</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">point</span><span class="p">)</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_location</span> <span class="o">==</span> <span class="s1">&#39;Middle&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_switch</span> <span class="o">==</span> <span class="s1">&#39;L&#39;</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># We are in middle and switch is on left.</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># We are in middle and switch is on right.</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_location</span> <span class="o">==</span> <span class="s1">&#39;Left&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_switch</span> <span class="o">==</span> <span class="s1">&#39;L&#39;</span><span class="p">:</span>
-                <span class="k">pass</span> <span class="c1"># We are on left and switch is on left.</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span> <span class="c1"># We are on left and switch is on right.</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_location</span> <span class="o">==</span> <span class="s1">&#39;Right&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">close_switch</span> <span class="o">==</span> <span class="s1">&#39;L&#39;</span><span class="p">:</span>
-                <span class="k">pass</span> <span class="c1"># We are on right and switch is on left.</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">pass</span> <span class="c1"># We are on right and switch is on right.</span>
+        <span class="c1"># set current position. TODO: implement.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 
-<div class="viewcode-block" id="Autonomous.target"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.target">[docs]</a>    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># active waypoint: the waypoint we are currently headed towards.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;init&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([],</span> <span class="mi">30</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Autonomous.state_init"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_init">[docs]</a>    <span class="k">def</span> <span class="nf">state_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        call from autonomous init in robotpy</span>
-<span class="sd">        give all location information decide where to go</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Perform robot-oriented initializations.</span>
+
+<span class="sd">        Close the claw and set the lift to its lowest position, then transition</span>
+<span class="sd">        into the turning state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+        <span class="c1">#self.robot.claw.close()  # put claw into &#39;closing&#39; state</span>
+        <span class="c1">#self.robot.lift.set_height(self.init_lift_height)</span>
+
+        <span class="c1"># if everything is set correctly, transition to the turning state.</span>
+        <span class="c1">#if (</span>
+        <span class="c1">#    self.robot.claw.state == &#39;closed&#39;</span>
+        <span class="c1">#    and abs(self.robot.lift.get_height() - self.init_lift_height)</span>
+        <span class="c1">#    &lt;= self.lift_height_tolerance</span>
+        <span class="c1">#):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_angles</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;turn&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_turn"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_turn">[docs]</a>    <span class="k">def</span> <span class="nf">state_turn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Turn the swerve modules to their desired angle.</span>
+<span class="sd">        Then transition into the `drive` state.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># stop the drivetrain. Otherwise the robot will do weird curves.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># get the active waypoint, and from there calculate the displacement</span>
+        <span class="c1"># vector relative to the robot&#39;s position.</span>
+        <span class="n">active_waypoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span><span class="p">]</span>
+        <span class="n">disp_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span> <span class="o">-</span> <span class="n">active_waypoint</span>
+
+        <span class="c1"># trigonometry to find the angle, then set the module angles.</span>
+        <span class="n">tgt_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">disp_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">disp_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">tgt_angle</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">get_robot_heading</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_angles</span><span class="p">(</span><span class="n">tgt_angle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cur_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">get_closed_loop_error</span><span class="p">(),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+
+        <span class="n">cur_error</span> <span class="o">*=</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">512</span>
+
+        <span class="n">max_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cur_error</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_err</span><span class="p">)</span>
+        <span class="n">avg_max_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span><span class="o">.</span><span class="n">maxlen</span>  <span class="c1"># noqa: E501</span>
+            <span class="ow">and</span> <span class="n">avg_max_err</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_angle_tolerance</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">reset_drive_position</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;drive&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_drive"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_drive">[docs]</a>    <span class="k">def</span> <span class="nf">state_drive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drive toward a waypoint.</span>
+<span class="sd">        Calculate the distance, then move the modules that distance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get active waypoint and calculate displacement vector.</span>
+        <span class="n">active_waypoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span><span class="p">]</span>
+        <span class="n">disp_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span> <span class="o">-</span> <span class="n">active_waypoint</span>
+
+        <span class="c1"># calculate distance with pythagorean theorem</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">disp_vec</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">tgt_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">disp_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">disp_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">tgt_angle</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">get_robot_heading</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_angles</span><span class="p">(</span><span class="n">tgt_angle</span><span class="p">)</span>
+
+        <span class="c1"># get the average distance the robot has gone so far</span>
+        <span class="n">avg_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">get_module_distances</span><span class="p">())</span>
+        <span class="n">avg_dist</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">80</span> <span class="o">*</span> <span class="mf">6.67</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drive_speed</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># is the distance traveled somewhere close to the distance needed to</span>
+        <span class="c1"># travel?</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">avg_dist</span> <span class="o">-</span> <span class="n">dist</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_dist_tolerance</span><span class="p">:</span>
+
+            <span class="c1"># do we have waypoints left to drive to?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># update the new current position as the active waypoint.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span> <span class="o">=</span> <span class="n">active_waypoint</span>
+
+            <span class="c1"># do we still have waypoints left to go?</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__module_angle_err_window</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">reset_drive_position</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;turn&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;lift&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_lift"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_lift">[docs]</a>    <span class="k">def</span> <span class="nf">state_lift</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lift the RD4B to the height needed.</span>
+<span class="sd">        Then transition to the target states for final adjustments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># stop the drivetrain.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># set the height of the RD4B.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">lift</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_height</span><span class="p">)</span>
+
+        <span class="c1"># is the height there yet? if so, transition.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">lift</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_height</span><span class="p">)</span>
+            <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lift_height_tolerance</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;target-turn&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_target_turn"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_target_turn">[docs]</a>    <span class="k">def</span> <span class="nf">state_target_turn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Complete a targeted, measured turn towards the target, turning the</span>
+<span class="sd">        entire chassis this time instead of just each module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># the usual displacement stuff.</span>
+        <span class="n">disp_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span>
+        <span class="n">tgt_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">disp_vec</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">disp_vec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># we are actually going to turn the whole chassis this time, using the</span>
+        <span class="c1"># navx to ensure we are doing things correctly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">turn_to_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="p">,</span> <span class="n">tgt_angle</span><span class="p">)</span>
+
+        <span class="n">hdg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">get_robot_heading</span><span class="p">()</span>
+
+        <span class="c1"># if we are at the proper angle now, move to the target-drive state.</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hdg</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">tgt_angle</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_angle_tolerance</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;target-drive&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_target_drive"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_target_drive">[docs]</a>    <span class="k">def</span> <span class="nf">state_target_drive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drive a measured distance towards the target.</span>
+<span class="sd">        This should position the claw, with the cube, right over the switch or</span>
+<span class="sd">        scale.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">avg_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">get_module_distances</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_angles</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drive_speed</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">avg_dist</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_drive_dist</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drive_dist_tolerance</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;drop&#39;</span></div>
+
+<div class="viewcode-block" id="Autonomous.state_drop"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.state_drop">[docs]</a>    <span class="k">def</span> <span class="nf">state_drop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open the claw and drop the cube.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">claw</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
+
+
+    <span class="c1">#: Maps state names to functions.</span>
+    <span class="n">state_table</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">state_init</span><span class="p">,</span>
+        <span class="s1">&#39;turn&#39;</span><span class="p">:</span> <span class="n">state_turn</span><span class="p">,</span>
+        <span class="s1">&#39;drive&#39;</span><span class="p">:</span> <span class="n">state_drive</span><span class="p">,</span>
+        <span class="s1">&#39;lift&#39;</span><span class="p">:</span> <span class="n">state_lift</span><span class="p">,</span>
+        <span class="s1">&#39;target-turn&#39;</span><span class="p">:</span> <span class="n">state_target_turn</span><span class="p">,</span>
+        <span class="s1">&#39;target-drive&#39;</span><span class="p">:</span> <span class="n">state_target_drive</span><span class="p">,</span>
+        <span class="s1">&#39;drop&#39;</span><span class="p">:</span> <span class="n">state_drop</span>
+    <span class="p">}</span>
 
 <div class="viewcode-block" id="Autonomous.periodic"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.periodic">[docs]</a>    <span class="k">def</span> <span class="nf">periodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        this is called by robotpy auto periodic</span>
-<span class="sd">        decide</span>
+<span class="sd">        Updates and progresses the autonomous state machine.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="c1"># TODO: Only run autonomous if in Drive or Turn states;</span>
+        <span class="c1"># this is for testing purposes only.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;init&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;drive&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;turn&quot;</span><span class="p">:</span>
+            <span class="c1"># Call function corresponding to current state.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">](</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Autonomous.update_smart_dashboard"><a class="viewcode-back" href="../autonomous.html#autonomous.Autonomous.update_smart_dashboard">[docs]</a>    <span class="k">def</span> <span class="nf">update_smart_dashboard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Periodically call this function to update the smartdashboard with</span>
+<span class="sd">        important information about the autonomous class, for troubleshooting/</span>
+<span class="sd">        monitoring purposes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putString</span><span class="p">(</span>
+            <span class="s1">&#39;autonomous state&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+        <span class="p">)</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putString</span><span class="p">(</span>
+            <span class="s1">&#39;Current Auto Position&#39;</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_pos</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span><span class="p">):</span>
+            <span class="n">active_waypoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waypoints</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">active_waypoint_idx</span><span class="p">]</span>
+            <span class="n">wpilib</span><span class="o">.</span><span class="n">SmartDashboard</span><span class="o">.</span><span class="n">putString</span><span class="p">(</span>
+                <span class="s1">&#39;Active Waypoint&#39;</span><span class="p">,</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">active_waypoint</span><span class="p">)</span>
+            <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -144,7 +420,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

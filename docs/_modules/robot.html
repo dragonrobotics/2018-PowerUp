@@ -43,13 +43,16 @@
 <span></span><span class="kn">import</span> <span class="nn">wpilib</span>
 <span class="kn">import</span> <span class="nn">constants</span>
 <span class="kn">import</span> <span class="nn">swerve</span>
-<span class="kn">import</span> <span class="nn">teleop</span>
+<span class="kn">import</span> <span class="nn">lift</span>
+<span class="kn">from</span> <span class="nn">teleop</span> <span class="k">import</span> <span class="n">Teleop</span>
 <span class="kn">from</span> <span class="nn">autonomous</span> <span class="k">import</span> <span class="n">Autonomous</span>
-
+<span class="kn">from</span> <span class="nn">sensors.imu</span> <span class="k">import</span> <span class="n">IMU</span>
 
 <div class="viewcode-block" id="Robot"><a class="viewcode-back" href="../robot.html#robot.Robot">[docs]</a><span class="k">class</span> <span class="nc">Robot</span><span class="p">(</span><span class="n">wpilib</span><span class="o">.</span><span class="n">IterativeRobot</span><span class="p">):</span>
 <div class="viewcode-block" id="Robot.robotInit"><a class="viewcode-back" href="../robot.html#robot.Robot.robotInit">[docs]</a>    <span class="k">def</span> <span class="nf">robotInit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">constants</span><span class="o">.</span><span class="n">load_control_config</span><span class="p">()</span>
+
+        <span class="n">wpilib</span><span class="o">.</span><span class="n">CameraServer</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="s1">&#39;driver_vision.py:main&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">autoPositionSelect</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">SendableChooser</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">autoPositionSelect</span><span class="o">.</span><span class="n">addDefault</span><span class="p">(</span><span class="s1">&#39;Middle&#39;</span><span class="p">,</span> <span class="s1">&#39;Middle&#39;</span><span class="p">)</span>
@@ -65,7 +68,18 @@
             <span class="n">constants</span><span class="o">.</span><span class="n">chassis_length</span><span class="p">,</span>
             <span class="n">constants</span><span class="o">.</span><span class="n">chassis_width</span><span class="p">,</span>
             <span class="n">constants</span><span class="o">.</span><span class="n">swerve_config</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lift</span> <span class="o">=</span> <span class="n">lift</span><span class="o">.</span><span class="n">RD4BLift</span><span class="p">(</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">lift_ids</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">lift_ids</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1">#self.claw = lift.Claw(</span>
+        <span class="c1">#    constants.claw_id</span>
+        <span class="c1">#)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">imu</span> <span class="o">=</span> <span class="n">IMU</span><span class="p">(</span><span class="n">wpilib</span><span class="o">.</span><span class="n">SPI</span><span class="o">.</span><span class="n">Port</span><span class="o">.</span><span class="n">kMXP</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Robot.disabledInit"><a class="viewcode-back" href="../robot.html#robot.Robot.disabledInit">[docs]</a>    <span class="k">def</span> <span class="nf">disabledInit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># We don&#39;t really _need_ to reload configuration in</span>
@@ -74,23 +88,37 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">load_config_values</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Robot.disabledPeriodic"><a class="viewcode-back" href="../robot.html#robot.Robot.disabledPeriodic">[docs]</a>    <span class="k">def</span> <span class="nf">disabledPeriodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Robot.autonomousInit"><a class="viewcode-back" href="../robot.html#robot.Robot.autonomousInit">[docs]</a>    <span class="k">def</span> <span class="nf">autonomousInit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">load_config_values</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span> <span class="o">=</span> <span class="n">Autonomous</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">autoPositionSelect</span><span class="o">.</span><span class="n">getSelected</span><span class="p">())</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span> <span class="o">=</span> <span class="n">Autonomous</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">autoPositionSelect</span><span class="o">.</span><span class="n">getSelected</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">periodic</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Robot.autonomousPeriodic"><a class="viewcode-back" href="../robot.html#robot.Robot.autonomousPeriodic">[docs]</a>    <span class="k">def</span> <span class="nf">autonomousPeriodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">periodic</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Robot.teleopInit"><a class="viewcode-back" href="../robot.html#robot.Robot.teleopInit">[docs]</a>    <span class="k">def</span> <span class="nf">teleopInit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teleop</span> <span class="o">=</span> <span class="n">Teleop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_stick</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">load_config_values</span><span class="p">()</span>
         <span class="n">constants</span><span class="o">.</span><span class="n">load_control_config</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Robot.teleopPeriodic"><a class="viewcode-back" href="../robot.html#robot.Robot.teleopPeriodic">[docs]</a>    <span class="k">def</span> <span class="nf">teleopPeriodic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># For now: basic driving</span>
-        <span class="n">teleop</span><span class="o">.</span><span class="n">drive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">control_stick</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span></div></div>
+        <span class="n">constants</span><span class="o">.</span><span class="n">load_control_config</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">teleop</span><span class="o">.</span><span class="n">drive</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teleop</span><span class="o">.</span><span class="n">buttons</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teleop</span><span class="o">.</span><span class="n">lift_control</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teleop</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imu</span><span class="o">.</span><span class="n">update_smart_dashboard</span><span class="p">()</span></div></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -144,7 +172,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

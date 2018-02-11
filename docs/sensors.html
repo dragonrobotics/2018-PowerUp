@@ -46,6 +46,45 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-sensors.imu">
+<span id="sensors-imu-module"></span><h2>sensors.imu module<a class="headerlink" href="#module-sensors.imu" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sensors.imu.IMU">
+<em class="property">class </em><code class="descclassname">sensors.imu.</code><code class="descname">IMU</code><span class="sig-paren">(</span><em>port</em>, <em>imu_type='navx'</em>, <em>interface='spi'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="sensors.imu.IMU.get_continuous_heading">
+<code class="descname">get_continuous_heading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.get_continuous_heading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.get_continuous_heading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sensors.imu.IMU.get_robot_heading">
+<code class="descname">get_robot_heading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.get_robot_heading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.get_robot_heading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sensors.imu.IMU.get_yaw_rate">
+<code class="descname">get_yaw_rate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.get_yaw_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.get_yaw_rate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sensors.imu.IMU.is_present">
+<code class="descname">is_present</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.is_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.is_present" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sensors.imu.IMU.set_angle_offset">
+<code class="descname">set_angle_offset</code><span class="sig-paren">(</span><em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.set_angle_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.set_angle_offset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="sensors.imu.IMU.update_smart_dashboard">
+<code class="descname">update_smart_dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sensors/imu.html#IMU.update_smart_dashboard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sensors.imu.IMU.update_smart_dashboard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-sensors.sensorconstants">
 <span id="sensors-sensorconstants-module"></span><h2>sensors.sensorconstants module<a class="headerlink" href="#module-sensors.sensorconstants" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -95,11 +134,13 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">2018-PowerUp</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="autonomous.html">autonomous module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="driver_vision.html">driver_vision module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lift.html">lift package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="physics.html">physics module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">sensors package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-sensors.imu">sensors.imu module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sensors.sensorconstants">sensors.sensorconstants module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sensors.ultrasonic">sensors.ultrasonic module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-sensors">Module contents</a></li>
@@ -141,7 +182,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

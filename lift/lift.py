@@ -1,15 +1,15 @@
 """
-@file lift.py
-Code for the RD4B subsystem
+Code for the RD4B subsystem.
 
 This file contains code for the RD4B lift subsystem, including helper functions
 to make working with the lift easier from both autonomous and teleop control
 modes.  It also has functionality for reading config values from Preferences.
 
-@author Brandon Gong
-@version 0.0.1
-@date January 19, 2018
- """
+:Author: Brandon Gong
+:Version: 0.0.1
+:Date: January 19, 2018
+
+"""
 
 from ctre.talonsrx import TalonSRX
 import wpilib
@@ -17,9 +17,17 @@ import math
 
 
 class RD4BLift:
+    """
+    This class contains helper functions for manipulating the position of the
+    RD4B lift.
 
-    # Length for one segment of the arm. As of the time this comment
-    # was written a segment is 30 inches long.
+    Parameters:
+        left_id: the ID number of the left talon.
+        right_id: the ID number of the right talon.
+    """
+
+    #: Length for one segment of the arm. As of the time this comment
+    #: was written a segment is 30 inches long.
     ARM_LENGTH = 30
 
     def __init__(self, left_id, right_id):
@@ -29,10 +37,6 @@ class RD4BLift:
         Calling this constructor initializes the two drive motors and
         configures their control modes, and also loads the configuration
         values from preferences.
-
-        Args:
-            left_id: the ID number of the left talon.
-            right_id: the ID number of the right talon.
         """
 
         # Create new instances of CANTalon for the left and right motors.

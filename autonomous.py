@@ -6,21 +6,22 @@ a finite-state automaton updated per tick in autonomousPeriodic.
 
 Autonomous transitions between these states:
 
-    `init`: The robot closes the claw, fully lowers the lift, and transitions
-            onto the `turn` state to angle toward the next waypoint.
-    `turn`: The swerve modules (not the entire chassis) angle toward the next
-            waypoint, then transitions into the drive state
-    `drive`: The robot drives over to the next waypoint, then transitions into
-             the turning state or the lifting state if there are no other
-             waypoints.
-    `lift`: the RD4B lifts to a predetermined height (either the height of the
-            scale or switch), then transitions to the target states.
-    `target-turn`: Turns the entire chassis towards the target (either the
-                   switch or the scale).
-    `target-drive`: Drives the robot towards the target. This differs slightly
-                    from the normal `drive` state because it uses sensors to
-                    be more accurate.
-    `drop`: The claw opens.
+    - **init**: The robot closes the claw, fully lowers the lift, and
+      transitions onto the **turn** state to angle toward the next waypoint.
+    - **turn**: The swerve modules (not the entire chassis) angle toward the
+      next waypoint, then transitions into the drive state
+    - **drive**: The robot drives over to the next waypoint, then transitions
+      into the turning state or the lifting state if there are no other
+      waypoints.
+    - **lift**: the RD4B lifts to a predetermined height (either the height of
+      the scale or switch), then transitions to the target states.
+    - **target-turn**: Turns the entire chassis towards the target (either the
+      switch or the scale).
+    - **target-drive**: Drives the robot towards the target. This differs
+      slightly from the normal **drive** state because it uses sensors to be
+      more accurate.
+    - **drop**: The claw opens.
+
 """
 
 import math
@@ -30,6 +31,19 @@ from collections import deque
 
 
 class Autonomous:
+    """
+    This class implements a finite-state automaton for controlling autonomous.
+    Also, this class includes a way to input waypoint coordinates into a
+    a template to be automatically selected and formatted as necessary.
+
+    Parameters:
+        robot: the robot instance.
+        robot_position: the position of the robot on the field.
+
+    """
+
+    #: Dictionary of paths (arrays of waypoints).  The right one is chosen
+    #: at runtime.
     PATHS = {
         "default": [
             (-24, 0),
@@ -61,13 +75,11 @@ class Autonomous:
     # Internal code starts here.
     ##################################################################
 
-    turn_angle_tolerance = 2.5  # degrees
-    drive_dist_tolerance = 3  # inches
-    lift_height_tolerance = 2  # inches
-
-    drive_speed = 100  # talon native units / 100ms
-
-    init_lift_height = 6  # inches above ground for initialization
+    turn_angle_tolerance = 2.5  #: a tolerance range for turning, in degrees.
+    drive_dist_tolerance = 3  #: a tolerance range for driving, in inches.
+    lift_height_tolerance = 2  #: a tolerance range for lifting, in inches.
+    drive_speed = 100  #: how fast to drive, in native units per 100ms
+    init_lift_height = 6  #: initial lift height, in inches above the ground.
 
     def __init__(self, robot, robot_position):
         """
@@ -77,9 +89,6 @@ class Autonomous:
         The correct path is chosen from SmartDashboard and initialized into
         numpy-based waypoints.  The current position is set.  Then, the state
         is set to 'init' and physical initializations are done there.
-
-        Parameters:
-            robot: the robot instance.
         """
 
         # basic initalization.
@@ -118,15 +127,15 @@ class Autonomous:
         into the turning state.
         """
 
-        #self.robot.claw.close()  # put claw into 'closing' state
-        #self.robot.lift.set_height(self.init_lift_height)
+        # self.robot.claw.close()  # put claw into 'closing' state
+        # self.robot.lift.set_height(self.init_lift_height)
 
         # if everything is set correctly, transition to the turning state.
-        #if (
+        # if (
         #    self.robot.claw.state == 'closed'
         #    and abs(self.robot.lift.get_height() - self.init_lift_height)
         #    <= self.lift_height_tolerance
-        #):
+        # ):
 
         self.robot.drivetrain.set_all_module_angles(0)
         self.robot.drivetrain.set_all_module_speeds(0, direct=True)
@@ -148,6 +157,8 @@ class Autonomous:
 
         # trigonometry to find the angle, then set the module angles.
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
+        tgt_angle += self.robot.imu.get_robot_heading()
+
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
         self.robot.drivetrain.set_all_module_speeds(0, direct=True)
 
@@ -183,6 +194,7 @@ class Autonomous:
         dist = np.sqrt(np.sum(disp_vec**2))
 
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
+        tgt_angle += self.robot.imu.get_robot_heading()
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
 
         # get the average distance the robot has gone so far
@@ -239,13 +251,9 @@ class Autonomous:
 
         # we are actually going to turn the whole chassis this time, using the
         # navx to ensure we are doing things correctly.
-        self.robot.drivetrain.turn_to_angle(self.robot.navx, tgt_angle)
+        self.robot.drivetrain.turn_to_angle(self.robot.imu, tgt_angle)
 
-        hdg = self.navx.getFusedHeading()
-        prefs = wpilib.Preferences.getInstance()
-
-        if prefs.getBoolean('Reverse Heading Direction', False):
-            hdg *= -1
+        hdg = self.robot.imu.get_robot_heading()
 
         # if we are at the proper angle now, move to the target-drive state.
         if abs(hdg - math.degrees(tgt_angle)) <= self.turn_angle_tolerance:
@@ -274,9 +282,7 @@ class Autonomous:
         self.robot.drivetrain.set_all_module_speeds(0, True)
         self.robot.claw.open()
 
-    """
-    Maps state names to functions.
-    """
+    #: Maps state names to functions.
     state_table = {
         'init': state_init,
         'turn': state_turn,
@@ -293,13 +299,23 @@ class Autonomous:
         """
         # TODO: Only run autonomous if in Drive or Turn states;
         # this is for testing purposes only.
-        if self.state == "init" or self.state == "drive" or self.state == "turn":
+        if (
+            self.state == "init" or
+            self.state == "drive" or
+            self.state == "turn"
+        ):
             # Call function corresponding to current state.
             self.state_table[self.state](self)
         else:
             self.robot.drivetrain.set_all_module_speeds(0, direct=True)
 
     def update_smart_dashboard(self):
+        """
+        Periodically call this function to update the smartdashboard with
+        important information about the autonomous class, for troubleshooting/
+        monitoring purposes.
+        """
+
         wpilib.SmartDashboard.putString(
             'autonomous state',
             self.state
