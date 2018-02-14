@@ -5,7 +5,7 @@ import wpilib
 import numpy as np
 import constants
 from robotpy_ext.control.button_debouncer import ButtonDebouncer
-
+imprt winch.Winch
 
 class Teleop:
     last_applied_control = np.array([0, 0, 0])
@@ -52,6 +52,19 @@ class Teleop:
         tgt_height = liftPct * constants.lift_height
 
         self.robot.lift.set_height(tgt_height)
+
+    def winch_control(self,val):
+        if val == 1
+            self.robot.winch.forward()
+        elif val == 0:
+            self.robot.winch.stop()
+        elif val == -1:
+            self.robot.winch.reverse()
+        else:
+            pass
+
+
+
 
     def drive(self):
         """

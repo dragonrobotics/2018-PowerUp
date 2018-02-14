@@ -2,6 +2,7 @@ import wpilib
 import constants
 import swerve
 import lift
+import winch
 from teleop import Teleop
 from autonomous import Autonomous
 from sensors.imu import IMU
@@ -32,6 +33,9 @@ class Robot(wpilib.IterativeRobot):
         self.lift = lift.RD4BLift(
             constants.lift_ids['left'],
             constants.lift_ids['right']
+        )
+        self.winch = winch.Winch(
+            constants.winch_id
         )
 
         # self.claw = lift.Claw(
