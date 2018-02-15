@@ -27,7 +27,6 @@ from ctre.talonsrx import TalonSRX
 
 class Claw():
     claw_open_time = 0.5  # time to allow for the claw to open, in seconds
-    
 
     def __init__(self, talon_id, contact_sensor_channel):
         """

@@ -95,11 +95,11 @@ lift_ids = {
 claw_id = 22
 claw_contact_sensor_channel = 1
 
-#: The length of the chassis (units do not matter as long as they match)
+# The length of the chassis (units do not matter as long as they match)
 chassis_length = 24
 
-#: The width of the chassis (units do not matter as long as they match)
+# The width of the chassis (units do not matter as long as they match)
 chassis_width = 27
 
-#Winch motor
+# Winch Motor CAN ID
 winch_id = 2132

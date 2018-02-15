@@ -1,1 +1,1 @@
-from .winch import Winch
+from .winch import Winch  # noqa: F401
