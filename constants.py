@@ -100,3 +100,6 @@ chassis_length = 24
 
 #: The width of the chassis (units do not matter as long as they match)
 chassis_width = 27
+
+#Winch motor
+winch_id = 2132
