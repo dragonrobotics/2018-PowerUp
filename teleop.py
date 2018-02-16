@@ -14,6 +14,7 @@ class Teleop:
     def __init__(self, robot, control_stick):
         self.robot = robot
         self.stick = control_stick
+        self.throttle = wpilib.Joystick(1)
         self.prefs = wpilib.Preferences.getInstance()
 
         self.toggle_foc_button = ButtonDebouncer(self.stick, 7)
@@ -40,7 +41,7 @@ class Teleop:
             self.prefs.putInt('Selected Camera', current_camera)
 
     def lift_control(self):
-        liftPct = self.stick.getRawAxis(constants.liftAxis)
+        liftPct = self.throttle.getRawAxis(constants.liftAxis)
 
         if constants.liftInv:
             liftPct *= -1

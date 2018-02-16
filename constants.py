@@ -8,7 +8,7 @@ import wpilib
 fwdAxis = 1  #: Forward/Backward axis
 strAxis = 0  #: Left/Right axis
 rcwAxis = 2  #: Rotation axis
-liftAxis = 3  #: Lift control axis
+liftAxis = 2  #: Lift control axis
 fwdInv = True  #: Fwd/Bwd axis inverted
 strInv = True  #: L/R axis inverted
 rcwInv = True  #: Rot axis inverted
@@ -17,7 +17,7 @@ liftInv = True  #: lift axis inverted
 teleop_speed = 370
 turn_sensitivity = 0.25
 
-lift_height = 96  # inches (== 8 ft)
+lift_height = 84  # inches (== f ft)
 
 
 # Wraps the Preferences API to provide an alternative to all of the

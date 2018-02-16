@@ -20,8 +20,8 @@ angle_conv_factor = math.pi / (512 * 3)
 
 class Robot(wpilib.IterativeRobot):
     # Lift talon IDs:
-    main_lift_id = 14
-    follower_id = 15
+    main_lift_id = 31
+    follower_id = 42
 
     # Lift of one stage of the RD4B, in inches
     ARM_LENGTH = 28
