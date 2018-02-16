@@ -75,6 +75,12 @@ class IMU:
         elif self.type == 'navx':
             return self.__imu.getRate() * (math.pi / 180)
 
+    def reset(self):
+        if self.type == 'none':
+            return
+        elif self.type == 'navx':
+            self.__imu.reset()
+
     def update_smart_dashboard(self):
         wpilib.SmartDashboard.putBoolean(
             'IMU Present',
