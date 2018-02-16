@@ -46,16 +46,18 @@
 <span class="kn">import</span> <span class="nn">wpilib</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">constants</span>
-<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">robotpy_ext.control.button_debouncer</span> <span class="k">import</span> <span class="n">ButtonDebouncer</span>
+
 
 <div class="viewcode-block" id="Teleop"><a class="viewcode-back" href="../teleop.html#teleop.Teleop">[docs]</a><span class="k">class</span> <span class="nc">Teleop</span><span class="p">:</span>
     <span class="n">last_applied_control</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
     <span class="n">foc_enabled</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">control_stick</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stick</span> <span class="o">=</span> <span class="n">control_stick</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stick</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Joystick</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Joystick</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Preferences</span><span class="o">.</span><span class="n">getInstance</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">toggle_foc_button</span> <span class="o">=</span> <span class="n">ButtonDebouncer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
@@ -82,18 +84,25 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">prefs</span><span class="o">.</span><span class="n">putInt</span><span class="p">(</span><span class="s1">&#39;Selected Camera&#39;</span><span class="p">,</span> <span class="n">current_camera</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Teleop.lift_control"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.lift_control">[docs]</a>    <span class="k">def</span> <span class="nf">lift_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">liftPct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stick</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">liftAxis</span><span class="p">)</span>
+        <span class="n">liftPct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">throttle</span><span class="o">.</span><span class="n">getRawAxis</span><span class="p">(</span><span class="n">constants</span><span class="o">.</span><span class="n">liftAxis</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">constants</span><span class="o">.</span><span class="n">liftInv</span><span class="p">:</span>
             <span class="n">liftPct</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
 
-        <span class="c1"># normalize liftPct to [0, 1]</span>
-        <span class="n">liftPct</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">liftPct</span> <span class="o">/=</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">liftPct</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">constants</span><span class="o">.</span><span class="n">lift_deadband</span><span class="p">:</span>
+            <span class="n">liftPct</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="n">tgt_height</span> <span class="o">=</span> <span class="n">liftPct</span> <span class="o">*</span> <span class="n">constants</span><span class="o">.</span><span class="n">lift_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">lift</span><span class="o">.</span><span class="n">setLiftPower</span><span class="p">(</span><span class="n">liftPct</span><span class="p">)</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">lift</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="n">tgt_height</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Teleop.winch_control"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.winch_control">[docs]</a>    <span class="k">def</span> <span class="nf">winch_control</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">winch</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">winch</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">val</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">winch</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="Teleop.drive"><a class="viewcode-back" href="../teleop.html#teleop.Teleop.drive">[docs]</a>    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -215,7 +224,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

@@ -75,7 +75,7 @@
 <span class="sd">        contact_sensor_channel: the channel that the contact sensor is</span>
 <span class="sd">            connected to.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">claw_open_time</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1">#: time to allow for the claw to open, in seconds</span>
+    <span class="n">claw_movement_time</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1">#: time to allow for the claw to open, in seconds</span>
     <span class="n">claw_adjust_time</span> <span class="o">=</span> <span class="mf">0.25</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">talon_id</span><span class="p">):</span>
@@ -89,16 +89,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">talon</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="p">(</span><span class="n">talon_id</span><span class="p">)</span>
 
         <span class="c1"># Forward limit switch = claw opening limit switch</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">configForwardLimitSwitchSource</span><span class="p">(</span>
-            <span class="n">TalonSRX</span><span class="o">.</span><span class="n">LimitSwitchSource</span><span class="o">.</span><span class="n">FeedbackConnector</span><span class="p">,</span>
-            <span class="n">TalonSRX</span><span class="o">.</span><span class="n">LimitSwitchNormal</span><span class="o">.</span><span class="n">NormallyOpen</span><span class="p">,</span>
-            <span class="mi">0</span>
-        <span class="p">)</span>
+        <span class="c1"># self.talon.configForwardLimitSwitchSource(</span>
+        <span class="c1">#     TalonSRX.LimitSwitchSource.FeedbackConnector,</span>
+        <span class="c1">#     TalonSRX.LimitSwitchNormal.NormallyOpen,</span>
+        <span class="c1">#     0</span>
+        <span class="c1"># )</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;neutral&#39;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">closeAdjustTimer</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span> <span class="o">=</span> <span class="n">wpilib</span><span class="o">.</span><span class="n">Timer</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Claw.close"><a class="viewcode-back" href="../../lift.html#lift.claw.Claw.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -110,7 +110,9 @@
 <span class="sd">        already gripping the cube.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;closed&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;closing&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;closing&#39;</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;closing&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Claw.open"><a class="viewcode-back" href="../../lift.html#lift.claw.Claw.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -121,8 +123,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;neutral&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s1">&#39;opening&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;opening&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Claw.toggle"><a class="viewcode-back" href="../../lift.html#lift.claw.Claw.toggle">[docs]</a>    <span class="k">def</span> <span class="nf">toggle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -142,24 +144,28 @@
 
         <span class="c1"># if the state is manual control, stop update immediately and return.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;manual_ctrl&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="k">return</span>
 
         <span class="c1"># if the state is neutral, clear the start time and set the talon speed</span>
         <span class="c1"># to 0%</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;neutral&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVbus</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># if the state is &quot;closing&quot;, set the talon speed to -100%, and if the</span>
         <span class="c1"># touch sensor is depressed, transition to the &quot;closed&quot; state.</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;closing&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVbus</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
-            <span class="n">fwdLim</span><span class="p">,</span> <span class="n">revLim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">getLimitSwitchState</span><span class="p">()</span>
-
-            <span class="k">if</span> <span class="n">revLim</span><span class="p">:</span>  <span class="c1"># contact sensor pressed?</span>
+            <span class="c1"># fwdLim, revLim = self.talon.getLimitSwitchState()</span>
+            <span class="c1">#</span>
+            <span class="c1"># if revLim:  # contact sensor pressed?</span>
+            <span class="c1">#     self.state = &#39;closed&#39;</span>
+            <span class="c1">#     self.closeAdjustTimer.reset()</span>
+            <span class="c1">#     self.closeAdjustTimer.start()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">claw_movement_time</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;closed&#39;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">closeAdjustTimer</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">closeAdjustTimer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
@@ -167,18 +173,18 @@
         <span class="c1"># if the state is &quot;closed&quot;, use less power to the motors--</span>
         <span class="c1"># Maintain grip, but don&#39;t squeeze too hard</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;closed&#39;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closeAdjustTimer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">claw_adjust_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closeAdjustTimer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">claw_adjust_time</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVbus</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVbus</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># if the state is &quot;opening&quot;, save the current time if the start time</span>
         <span class="c1"># is currently empty and set the motor speed to +100%.</span>
-        <span class="c1"># Run until reaching claw_open_time, then transition to the &quot;neutral&quot;</span>
+        <span class="c1"># Run until reaching claw_movement_time, then transition to the &quot;neutral&quot;</span>
         <span class="c1"># state.</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;opening&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentVbus</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">openTimer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">claw_open_time</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">movementTimer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">claw_movement_time</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s1">&#39;neutral&#39;</span></div></div>
 </pre></div>
 
@@ -229,7 +235,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

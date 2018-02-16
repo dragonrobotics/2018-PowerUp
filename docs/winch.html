@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>teleop module &#8212; 2018-PowerUp  documentation</title>
+    <title>winch package &#8212; 2018-PowerUp  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -24,8 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="vision package" href="vision.html" />
-    <link rel="prev" title="swerve package" href="swerve.html" />
+    <link rel="prev" title="vision package" href="vision.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -41,51 +40,38 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-teleop">
-<span id="teleop-module"></span><h1>teleop module<a class="headerlink" href="#module-teleop" title="Permalink to this headline">¶</a></h1>
-<p>Contains functions for teleop logic.</p>
+  <div class="section" id="winch-package">
+<h1>winch package<a class="headerlink" href="#winch-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-winch.winch">
+<span id="winch-winch-module"></span><h2>winch.winch module<a class="headerlink" href="#module-winch.winch" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="teleop.Teleop">
-<em class="property">class </em><code class="descclassname">teleop.</code><code class="descname">Teleop</code><span class="sig-paren">(</span><em>robot</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop" title="Permalink to this definition">¶</a></dt>
+<dt id="winch.winch.Winch">
+<em class="property">class </em><code class="descclassname">winch.winch.</code><code class="descname">Winch</code><span class="sig-paren">(</span><em>talon_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/winch/winch.html#Winch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#winch.winch.Winch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <dl class="method">
-<dt id="teleop.Teleop.buttons">
-<code class="descname">buttons</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.buttons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.buttons" title="Permalink to this definition">¶</a></dt>
+<dt id="winch.winch.Winch.forward">
+<code class="descname">forward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/winch/winch.html#Winch.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#winch.winch.Winch.forward" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="teleop.Teleop.drive">
-<code class="descname">drive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.drive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.drive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Drive the robot directly using a joystick.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="teleop.Teleop.foc_enabled">
-<code class="descname">foc_enabled</code><em class="property"> = False</em><a class="headerlink" href="#teleop.Teleop.foc_enabled" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="teleop.Teleop.last_applied_control">
-<code class="descname">last_applied_control</code><em class="property"> = array([0, 0, 0])</em><a class="headerlink" href="#teleop.Teleop.last_applied_control" title="Permalink to this definition">¶</a></dt>
+<dt id="winch.winch.Winch.reverse">
+<code class="descname">reverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/winch/winch.html#Winch.reverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#winch.winch.Winch.reverse" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="teleop.Teleop.lift_control">
-<code class="descname">lift_control</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.lift_control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.lift_control" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="teleop.Teleop.update_smart_dashboard">
-<code class="descname">update_smart_dashboard</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.update_smart_dashboard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.update_smart_dashboard" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="teleop.Teleop.winch_control">
-<code class="descname">winch_control</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/teleop.html#Teleop.winch_control"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#teleop.Teleop.winch_control" title="Permalink to this definition">¶</a></dt>
+<dt id="winch.winch.Winch.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/winch/winch.html#Winch.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#winch.winch.Winch.stop" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
+</div>
+<div class="section" id="module-winch">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-winch" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -115,9 +101,14 @@
 <li class="toctree-l2"><a class="reference internal" href="robot.html">robot module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sensors.html">sensors package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="swerve.html">swerve package</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">teleop module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="teleop.html">teleop module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vision.html">vision package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="winch.html">winch package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">winch package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-winch.winch">winch.winch module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-winch">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -127,8 +118,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="modules.html">2018-PowerUp</a><ul>
-      <li>Previous: <a href="swerve.html" title="previous chapter">swerve package</a></li>
-      <li>Next: <a href="vision.html" title="next chapter">vision package</a></li>
+      <li>Previous: <a href="vision.html" title="previous chapter">vision package</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -155,7 +145,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="_sources/teleop.rst.txt"
+      <a href="_sources/winch.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

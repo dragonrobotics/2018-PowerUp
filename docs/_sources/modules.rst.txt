@@ -14,3 +14,4 @@
    swerve
    teleop
    vision
+   winch

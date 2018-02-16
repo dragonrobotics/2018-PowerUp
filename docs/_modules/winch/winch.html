@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>sensors.ultrasonic &#8212; 2018-PowerUp  documentation</title>
+    <title>winch.winch &#8212; 2018-PowerUp  documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -39,23 +39,22 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for sensors.ultrasonic</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot; I2C sensor interface&quot;&quot;&quot;</span>
+  <h1>Source code for winch.winch</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ctre.talonsrx</span> <span class="k">import</span> <span class="n">TalonSRX</span>
 
 
-<div class="viewcode-block" id="Ultrasonic"><a class="viewcode-back" href="../../sensors.html#sensors.ultrasonic.Ultrasonic">[docs]</a><span class="k">class</span> <span class="nc">Ultrasonic</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        one instance per I2C address</span>
-<span class="sd">        :param address:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+<div class="viewcode-block" id="Winch"><a class="viewcode-back" href="../../winch.html#winch.winch.Winch">[docs]</a><span class="k">class</span> <span class="nc">Winch</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">talon_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">talon</span> <span class="o">=</span> <span class="n">TalonSRX</span><span class="p">(</span><span class="n">talon_id</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Ultrasonic.read_distance"><a class="viewcode-back" href="../../sensors.html#sensors.ultrasonic.Ultrasonic.read_distance">[docs]</a>    <span class="k">def</span> <span class="nf">read_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Winch.forward"><a class="viewcode-back" href="../../winch.html#winch.winch.Winch.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentOutput</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Ultrasonic.update_address"><a class="viewcode-back" href="../../sensors.html#sensors.ultrasonic.Ultrasonic.update_address">[docs]</a>    <span class="k">def</span> <span class="nf">update_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span></div></div>
+<div class="viewcode-block" id="Winch.reverse"><a class="viewcode-back" href="../../winch.html#winch.winch.Winch.reverse">[docs]</a>    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentOutput</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Winch.stop"><a class="viewcode-back" href="../../winch.html#winch.winch.Winch.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">talon</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TalonSRX</span><span class="o">.</span><span class="n">ControlMode</span><span class="o">.</span><span class="n">PercentOutput</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>
