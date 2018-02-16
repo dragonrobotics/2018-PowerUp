@@ -56,14 +56,14 @@ class Robot(wpilib.IterativeRobot):
     def autonomousInit(self):
         self.drivetrain.load_config_values()
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
-        self.auto.periodic()
+        #self.auto.periodic()
 
     def autonomousPeriodic(self):
         self.auto.update_smart_dashboard()
         self.imu.update_smart_dashboard()
         self.drivetrain.update_smart_dashboard()
 
-        self.auto.periodic()
+        #self.auto.periodic()
 
     def teleopInit(self):
         self.teleop = Teleop(self)
@@ -74,7 +74,7 @@ class Robot(wpilib.IterativeRobot):
         # For now: basic driving
         constants.load_control_config()
 
-        self.teleop.drive()
+        #self.teleop.drive()
         self.teleop.buttons()
         self.teleop.lift_control()
 

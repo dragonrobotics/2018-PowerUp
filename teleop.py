@@ -32,7 +32,7 @@ class Teleop:
     def buttons(self):
         if self.robot.imu.is_present():
             if self.zero_yaw_button.get():
-                self.imu.reset()
+                self.robot.imu.reset()
 
             if self.toggle_foc_button.get():
                 self.foc_enabled = not self.foc_enabled
