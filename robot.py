@@ -23,14 +23,13 @@ class Robot(wpilib.IterativeRobot):
             'Robot Starting Position',
             self.autoPositionSelect)
 
-        self.control_stick = wpilib.Joystick(0)
         self.drivetrain = swerve.SwerveDrive(
             constants.chassis_length,
             constants.chassis_width,
             constants.swerve_config
         )
 
-        self.lift = lift.RD4BLift(
+        self.lift = lift.ManualControlLift(
             constants.lift_ids['left'],
             constants.lift_ids['right']
         )
@@ -67,7 +66,7 @@ class Robot(wpilib.IterativeRobot):
         self.auto.periodic()
 
     def teleopInit(self):
-        self.teleop = Teleop(self, self.control_stick)
+        self.teleop = Teleop(self)
         self.drivetrain.load_config_values()
         constants.load_control_config()
 

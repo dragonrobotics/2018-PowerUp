@@ -11,9 +11,11 @@ class Teleop:
     last_applied_control = np.array([0, 0, 0])
     foc_enabled = False
 
-    def __init__(self, robot, control_stick):
+    def __init__(self, robot):
         self.robot = robot
-        self.stick = control_stick
+        self.stick = wpilib.Joystick(1)
+        self.throttle = wpilib.Joystick(2)
+
         self.prefs = wpilib.Preferences.getInstance()
 
         self.toggle_foc_button = ButtonDebouncer(self.stick, 7)
@@ -40,18 +42,15 @@ class Teleop:
             self.prefs.putInt('Selected Camera', current_camera)
 
     def lift_control(self):
-        liftPct = self.stick.getRawAxis(constants.liftAxis)
+        liftPct = self.throttle.getRawAxis(constants.liftAxis)
 
         if constants.liftInv:
             liftPct *= -1
 
-        # normalize liftPct to [0, 1]
-        liftPct += 1
-        liftPct /= 2
+        if abs(liftPct) < constants.lift_deadband:
+            liftPct = 0
 
-        tgt_height = liftPct * constants.lift_height
-
-        self.robot.lift.set_height(tgt_height)
+        self.robot.lift.setLiftPower(liftPct)
 
     def winch_control(self, val):
         if val == 1:

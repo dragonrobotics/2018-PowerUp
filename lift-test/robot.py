@@ -13,6 +13,7 @@ member variables.
 import math
 from ctre.talonsrx import TalonSRX
 import wpilib
+from robotpy_ext.control.button_debouncer import ButtonDebouncer
 
 FeedbackDevice = TalonSRX.FeedbackDevice
 angle_conv_factor = math.pi / (512 * 3)
@@ -20,14 +21,14 @@ angle_conv_factor = math.pi / (512 * 3)
 
 class Robot(wpilib.IterativeRobot):
     # Lift talon IDs:
-    main_lift_id = 14
-    follower_id = 15
+    main_lift_id = 31
+    follower_id = 42
 
     # Lift of one stage of the RD4B, in inches
     ARM_LENGTH = 28
 
     controller_index = 1
-    control_axis_index = 4
+    control_axis_index = 2
 
     def __load_config(self):
         self.max_height = self.__prefs.getFloat("Lift Max Height", 96)
@@ -51,8 +52,8 @@ class Robot(wpilib.IterativeRobot):
 
         # set the soft limits to LIMIT_UP and the initial angle. the motors
         # should not go outside of this range.
-        self.lift_main.configForwardSoftLimitThreshold(self.LIMIT_UP, 0)
-        self.lift_main.configReverseSoftLimitThreshold(self.initial_angle, 0)
+        self.lift_main.configForwardSoftLimitThreshold(int(self.LIMIT_UP), 0)
+        self.lift_main.configReverseSoftLimitThreshold(int(self.initial_angle), 0)
 
         self.lift_main.setSensorPhase(
             self.__prefs.getBoolean("Lift Sensor Phase", False)
@@ -113,6 +114,11 @@ class Robot(wpilib.IterativeRobot):
             self.main_lift_id
         )
 
+        self.last_out = 0
+
+        self.back = ButtonDebouncer(self.stick, 2)
+        self.fwd = ButtonDebouncer(self.stick, 3)
+
         self.__load_config()
 
     def disabledInit(self):
@@ -132,12 +138,20 @@ class Robot(wpilib.IterativeRobot):
         self.__load_config()
 
     def teleopPeriodic(self):
-        pct_pos = self.stick.getRawAxis(self.control_axis_index)
-        tgt_height = self.max_height * pct_pos
+        pct_pos = (self.stick.getRawAxis(self.control_axis_index) + 1) / 2
+        pct_pos = 1 - pct_pos
 
-        self.__set_lift_height(tgt_height)
+        if self.stick.getRawButton(2):
+            pct_pos *= -1
+        elif not self.stick.getRawButton(3):
+            pct_pos = 0
+
+        self.last_out = pct_pos
+
+        pct_pos *= .25
+
+        self.lift_main.set(TalonSRX.ControlMode.PercentOutput, pct_pos)
         self.__update_smart_dashboard()
-
 
 if __name__ == '__main__':
     wpilib.run(Robot)

@@ -8,17 +8,17 @@ import wpilib
 fwdAxis = 1  #: Forward/Backward axis
 strAxis = 0  #: Left/Right axis
 rcwAxis = 2  #: Rotation axis
-liftAxis = 3  #: Lift control axis
+
+liftAxis = 2  #: Lift control axis on throttle
+
 fwdInv = True  #: Fwd/Bwd axis inverted
 strInv = True  #: L/R axis inverted
 rcwInv = True  #: Rot axis inverted
-liftInv = True  #: lift axis inverted
 
 teleop_speed = 370
 turn_sensitivity = 0.25
 
-lift_height = 96  # inches (== 8 ft)
-
+lift_deadband = 0.25  # deadband
 
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
@@ -55,7 +55,7 @@ def load_control_config():
     WPILib before they have been initialized).
     """
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
-    global turn_sensitivity, liftAxis, liftInv
+    global turn_sensitivity, liftAxis, liftInv, lift_deadband
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
@@ -67,7 +67,10 @@ def load_control_config():
     rcwInv = __load_preference('Control: Rot Axis Inverted', backup=True)
 
     liftAxis = __load_preference('Control: Lift Control Axis', backup=3)
-    liftInv = __load_preference('Control: Lift Axis Inverted', backup=True)
+    liftInv = __load_preference('Control: Lift Control Inverted', backup=True)
+    lift_deadband = __load_preference(
+        'Control: Lift Control Deadband', backup=0.25
+    )
 
     teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
     turn_sensitivity = __load_preference(
@@ -75,25 +78,26 @@ def load_control_config():
     )
 
 
+
+
 #: Swerve module hardware configuration.
 #: List of tuples of form ('module name', steer_id, drive_id)
 #: See swerve/swerve_drive.py
 swerve_config = [
-    ('Back Right', 11, 10),
-    ('Back Left', 9, 8),
-    ('Front Right', 7, 6),
-    ('Front Left', 5, 4),
+    ('Back Right', 6, 4),
+    ('Back Left', 7, 5),
+    ('Front Right', 8, 9),
+    ('Front Left', 11, 10),
 ]
 
 #: Lift motor contorller CAN IDs. Currently dummy values.
 lift_ids = {
-    'left': 20,
-    'right': 21
+    'left': 31,
+    'right': 42
 }
 
 # Claw motor controller CAN ID(s).
-claw_id = 22
-claw_contact_sensor_channel = 1
+claw_id = 2
 
 # The length of the chassis (units do not matter as long as they match)
 chassis_length = 24
@@ -102,4 +106,4 @@ chassis_length = 24
 chassis_width = 27
 
 # Winch Motor CAN ID
-winch_id = 2132
+winch_id = 35
