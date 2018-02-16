@@ -53,7 +53,9 @@ class Robot(wpilib.IterativeRobot):
         # set the soft limits to LIMIT_UP and the initial angle. the motors
         # should not go outside of this range.
         self.lift_main.configForwardSoftLimitThreshold(int(self.LIMIT_UP), 0)
-        self.lift_main.configReverseSoftLimitThreshold(int(self.initial_angle), 0)
+        self.lift_main.configReverseSoftLimitThreshold(
+            int(self.initial_angle), 0
+        )
 
         self.lift_main.setSensorPhase(
             self.__prefs.getBoolean("Lift Sensor Phase", False)
@@ -152,6 +154,7 @@ class Robot(wpilib.IterativeRobot):
 
         self.lift_main.set(TalonSRX.ControlMode.PercentOutput, pct_pos)
         self.__update_smart_dashboard()
+
 
 if __name__ == '__main__':
     wpilib.run(Robot)

@@ -1,6 +1,7 @@
 import wpilib
 from ctre.talonsrx import TalonSRX
 
+
 class ManualControlLift:
     def __init__(self, main_lift_id, follower_id):
         self.main_lift_id = main_lift_id

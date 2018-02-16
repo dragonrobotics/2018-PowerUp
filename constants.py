@@ -20,6 +20,7 @@ turn_sensitivity = 0.25
 
 lift_deadband = 0.25  # deadband
 
+
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
 def __load_preference(key, backup):
@@ -76,8 +77,6 @@ def load_control_config():
     turn_sensitivity = __load_preference(
         'Control: Turn Sensitivity', backup=0.25
     )
-
-
 
 
 #: Swerve module hardware configuration.

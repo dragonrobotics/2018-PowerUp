@@ -138,8 +138,8 @@ class Claw:
 
         # if the state is "opening", save the current time if the start time
         # is currently empty and set the motor speed to +100%.
-        # Run until reaching claw_movement_time, then transition to the "neutral"
-        # state.
+        # Run until reaching claw_movement_time, then transition to
+        # the "neutral" state.
         elif self.state == 'opening':
             self.talon.set(TalonSRX.ControlMode.PercentVbus, 1.0)
             if self.movementTimer.get() > self.claw_movement_time:
