@@ -48,19 +48,10 @@ class SwerveModule(object):
 
         # Configure steering motors to use abs. encoders
         # and closed-loop control
-        self.steer_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0)  # noqa: E501
         self.steer_talon.selectProfileSlot(0, 0)
+        self.steer_talon.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0)  # noqa: E501
         self.steer_talon.configAllowableClosedloopError(
             0, math.ceil(_acceptable_steer_err), 0
-        )
-
-        # Reset Talon analog position
-        self.steer_talon.setAnalogPosition(
-            self.steer_talon.getAnalogInRaw(), 0
-        )
-        
-        self.steer_talon.setSelectedSensorPosition(
-            self.steer_talon.getAnalogInRaw(), 0, 0
         )
 
         self.drive_talon.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0)  # noqa: E501
@@ -73,6 +64,7 @@ class SwerveModule(object):
         self.max_speed = 470  # ticks / 100ms
         self.max_observed_speed = 0
         self.raw_drive_speeds = []
+        self.raw_target = 0
 
         self.load_config_values()
 
@@ -103,21 +95,19 @@ class SwerveModule(object):
             False
         ))
 
+        steer_sensor_phase = preferences.getBoolean(
+            self.name+'-Steer Sensor Reverse',
+            False
+        )
+
+        self.steer_talon.setSensorPhase(steer_sensor_phase)
+
         self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
-        if _apply_range_hack:
-            self.steer_min = preferences.getFloat(self.name+'-min', 0)
-            self.steer_max = preferences.getFloat(self.name+'-max', 1024)
-            actual_steer_range = int(self.steer_max - self.steer_min)
+        self.steer_min = 0
+        self.steer_max = 1024
+        self.steer_range = 1024
 
-            self.steer_min += int(actual_steer_range * 0.01)
-            self.steer_max -= int(actual_steer_range * 0.01)
-
-            self.steer_offset -= self.steer_min
-            self.steer_range = int(self.steer_max - self.steer_min)
-        else:
-            self.steer_min = 0
-            self.steer_max = 1024
-            self.steer_range = 1024
+        print("Read {} steer offset as: {}".format(self.name, self.steer_offset))
 
         self.drive_reversed = preferences.getBoolean(
             self.name+'-reversed', False
@@ -126,6 +116,8 @@ class SwerveModule(object):
         self.steer_reversed = preferences.getBoolean(
             self.name+'-steer-reversed', False
         )
+
+        self.steer_talon.setInverted(self.steer_reversed)
 
     def save_config_values(self):
         """
@@ -146,7 +138,7 @@ class SwerveModule(object):
         Get the current angular position of the swerve module in
         radians.
         """
-        native_units = self.steer_talon.getSelectedSensorPosition(0)
+        native_units = self.steer_talon.getSelectedSensorPosition()
         native_units -= self.steer_offset
 
         # Position in rotations
@@ -167,10 +159,14 @@ class SwerveModule(object):
                 where 0 points in the chassis forward direction.
         """
         n_rotations = math.trunc(
-            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
+            (self.steer_talon.getClosedLoopTarget(0) - self.steer_offset)
             / self.steer_range
         )
-        current_angle = self.get_steer_angle()
+
+        current_angle = self.steer_talon.getClosedLoopTarget(0)
+        current_angle -= self.steer_offset
+        current_angle *= (math.pi / 512)
+
         adjusted_target = angle_radians + (n_rotations * 2 * math.pi)
 
         possible_angles = [
@@ -192,8 +188,13 @@ class SwerveModule(object):
                     should_reverse_drive = False
         self.steer_target = shortest_tgt
 
+        self.steer_talon.configSelectedFeedbackSensor(
+            FeedbackDevice.Analog, 0, 0
+        )
+
         # Compute and send actual target to motor controller
         native_units = (self.steer_target * 512 / math.pi) + self.steer_offset
+        self.raw_target = native_units
         self.steer_talon.set(ControlMode.Position, native_units)
 
         self.drive_temp_flipped = should_reverse_drive
@@ -217,6 +218,7 @@ class SwerveModule(object):
         self.drive_talon.selectProfileSlot(1, 0)
         self.drive_talon.config_kF(0, 1023 / self.max_speed, 0)
 
+        #self.drive_talon.set(ControlMode.PercentOutput, 0)
         if direct:
             self.drive_talon.set(ControlMode.Velocity, speed)
         else:
@@ -261,8 +263,19 @@ class SwerveModule(object):
         """
         wpilib.SmartDashboard.putNumber(
             self.name+' Position',
-            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
-            * 180 / 512
+            (self.steer_talon.getAnalogIn() - self.steer_offset)
+            * (180 / 512)
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Raw Position',
+            self.steer_talon.getAnalogIn()
+        )
+
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' CL Position',
+            self.steer_talon.getSelectedSensorPosition(0)
         )
 
         wpilib.SmartDashboard.putNumber(
@@ -270,7 +283,8 @@ class SwerveModule(object):
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Target',
-            self.steer_target * 180 / math.pi)
+            self.raw_target
+        )
 
         wpilib.SmartDashboard.putNumber(
             self.name+' Steer Error',

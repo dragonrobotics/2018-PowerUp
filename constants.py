@@ -19,7 +19,7 @@ teleop_speed = 370
 turn_sensitivity = 0.25
 
 lift_deadband = 0.25  # deadband
-
+lift_coeff = 0.20
 
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
@@ -56,7 +56,7 @@ def load_control_config():
     WPILib before they have been initialized).
     """
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
-    global turn_sensitivity, liftAxis, liftInv, lift_deadband
+    global turn_sensitivity, liftAxis, liftInv, lift_deadband, lift_coeff
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
@@ -67,10 +67,13 @@ def load_control_config():
     rcwAxis = __load_preference('Control: Rotation Axis', backup=2)
     rcwInv = __load_preference('Control: Rot Axis Inverted', backup=True)
 
-    liftAxis = __load_preference('Control: Lift Control Axis', backup=3)
-    liftInv = __load_preference('Control: Lift Control Inverted', backup=True)
+    liftAxis = __load_preference('Control: Lift Control Axis', backup=2)
+    liftInv = __load_preference('Control: Lift Control Inverted', backup=False)
     lift_deadband = __load_preference(
         'Control: Lift Control Deadband', backup=0.25
+    )
+    lift_coeff = __load_preference(
+        'Control: Lift Control Coefficient', backup=0.20
     )
 
     teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
@@ -83,10 +86,10 @@ def load_control_config():
 #: List of tuples of form ('module name', steer_id, drive_id)
 #: See swerve/swerve_drive.py
 swerve_config = [
-    ('Back Right', 6, 4),
-    ('Back Left', 7, 5),
     ('Front Right', 8, 9),
     ('Front Left', 11, 10),
+    ('Back Right', 6, 4),
+    ('Back Left', 7, 5),
 ]
 
 #: Lift motor contorller CAN IDs. Currently dummy values.
@@ -99,7 +102,7 @@ lift_ids = {
 claw_id = 2
 
 # The length of the chassis (units do not matter as long as they match)
-chassis_length = 24
+chassis_length = 23
 
 # The width of the chassis (units do not matter as long as they match)
 chassis_width = 27
