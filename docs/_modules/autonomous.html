@@ -117,11 +117,11 @@
     <span class="c1"># Internal code starts here.</span>
     <span class="c1">##################################################################</span>
 
-    <span class="n">turn_angle_tolerance</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="c1">#: a tolerance range for turning, in degrees.</span>
-    <span class="n">drive_dist_tolerance</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1">#: a tolerance range for driving, in inches.</span>
-    <span class="n">lift_height_tolerance</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#: a tolerance range for lifting, in inches.</span>
-    <span class="n">drive_speed</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1">#: how fast to drive, in native units per 100ms</span>
-    <span class="n">init_lift_height</span> <span class="o">=</span> <span class="mi">6</span> <span class="c1">#: initial lift height, in inches above the ground.</span>
+    <span class="n">turn_angle_tolerance</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c1">#: a tolerance range for turning, in degrees.</span>
+    <span class="n">drive_dist_tolerance</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1">#: a tolerance range for driving, in inches.</span>
+    <span class="n">lift_height_tolerance</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: a tolerance range for lifting, in inches.</span>
+    <span class="n">drive_speed</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1">#: how fast to drive, in native units per 100ms</span>
+    <span class="n">init_lift_height</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1">#: initial lift height, in inches above the ground.</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">robot_position</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -169,15 +169,15 @@
 <span class="sd">        into the turning state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1">#self.robot.claw.close()  # put claw into &#39;closing&#39; state</span>
-        <span class="c1">#self.robot.lift.set_height(self.init_lift_height)</span>
+        <span class="c1"># self.robot.claw.close()  # put claw into &#39;closing&#39; state</span>
+        <span class="c1"># self.robot.lift.set_height(self.init_lift_height)</span>
 
         <span class="c1"># if everything is set correctly, transition to the turning state.</span>
-        <span class="c1">#if (</span>
+        <span class="c1"># if (</span>
         <span class="c1">#    self.robot.claw.state == &#39;closed&#39;</span>
         <span class="c1">#    and abs(self.robot.lift.get_height() - self.init_lift_height)</span>
         <span class="c1">#    &lt;= self.lift_height_tolerance</span>
-        <span class="c1">#):</span>
+        <span class="c1"># ):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_angles</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -324,7 +324,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">drivetrain</span><span class="o">.</span><span class="n">set_all_module_speeds</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">claw</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
 
-
     <span class="c1">#: Maps state names to functions.</span>
     <span class="n">state_table</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">state_init</span><span class="p">,</span>
@@ -342,7 +341,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: Only run autonomous if in Drive or Turn states;</span>
         <span class="c1"># this is for testing purposes only.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;init&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;drive&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;turn&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;init&quot;</span> <span class="ow">or</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;drive&quot;</span> <span class="ow">or</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;turn&quot;</span>
+        <span class="p">):</span>
             <span class="c1"># Call function corresponding to current state.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state_table</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">](</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -420,7 +423,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

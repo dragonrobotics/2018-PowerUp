@@ -99,8 +99,8 @@ connected to.</li>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="lift.claw.Claw.claw_open_time">
-<code class="descname">claw_open_time</code><em class="property"> = 0.5</em><a class="headerlink" href="#lift.claw.Claw.claw_open_time" title="Permalink to this definition">¶</a></dt>
+<dt id="lift.claw.Claw.claw_movement_time">
+<code class="descname">claw_movement_time</code><em class="property"> = 0.5</em><a class="headerlink" href="#lift.claw.Claw.claw_movement_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>time to allow for the claw to open, in seconds</p>
 </dd></dl>
 
@@ -141,138 +141,19 @@ machine.</p>
 </div>
 <div class="section" id="module-lift.lift">
 <span id="lift-lift-module"></span><h2>lift.lift module<a class="headerlink" href="#module-lift.lift" title="Permalink to this headline">¶</a></h2>
-<p>Code for the RD4B subsystem.</p>
-<p>This file contains code for the RD4B lift subsystem, including helper functions
-to make working with the lift easier from both autonomous and teleop control
-modes.  It also has functionality for reading config values from Preferences.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Brandon Gong</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">0.0.1</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Date:</th><td class="field-body">January 19, 2018</td>
-</tr>
-</tbody>
-</table>
 <dl class="class">
-<dt id="lift.lift.RD4BLift">
-<em class="property">class </em><code class="descclassname">lift.lift.</code><code class="descname">RD4BLift</code><span class="sig-paren">(</span><em>left_id</em>, <em>right_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift" title="Permalink to this definition">¶</a></dt>
+<dt id="lift.lift.ManualControlLift">
+<em class="property">class </em><code class="descclassname">lift.lift.</code><code class="descname">ManualControlLift</code><span class="sig-paren">(</span><em>main_lift_id</em>, <em>follower_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#ManualControlLift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.ManualControlLift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>This class contains helper functions for manipulating the position of the
-RD4B lift.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>left_id</strong> – the ID number of the left talon.</li>
-<li><strong>right_id</strong> – the ID number of the right talon.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
-<dt id="lift.lift.RD4BLift.ARM_LENGTH">
-<code class="descname">ARM_LENGTH</code><em class="property"> = 30</em><a class="headerlink" href="#lift.lift.RD4BLift.ARM_LENGTH" title="Permalink to this definition">¶</a></dt>
-<dd><p>Length for one segment of the arm. As of the time this comment
-was written a segment is 30 inches long.</p>
-</dd></dl>
+<dl class="method">
+<dt id="lift.lift.ManualControlLift.moveTimed">
+<code class="descname">moveTimed</code><span class="sig-paren">(</span><em>time</em>, <em>power</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#ManualControlLift.moveTimed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.ManualControlLift.moveTimed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
-<dt id="lift.lift.RD4BLift.fully_extend">
-<code class="descname">fully_extend</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.fully_extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.fully_extend" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fully extend the RD4B upward.
-This function runs the motor to the LIMIT_UP position.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.fully_retract">
-<code class="descname">fully_retract</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.fully_retract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.fully_retract" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fully retract the RD4B to the lowest position.
-This function runs the motor to the initial_angle position.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.getHeight">
-<code class="descname">getHeight</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.getHeight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.getHeight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the height of the RD4B.</p>
-<p>This function will get the angle of the RD4B from the encoder and
-convert this to a height given this equation:</p>
-<div class="math">
-\[\Delta H = 2 l_{arm} (\sin(\theta_f) - \sin(\theta_i))\]</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The height of the RD4B at the time this function is called.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.isMovementFinished">
-<code class="descname">isMovementFinished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.isMovementFinished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.isMovementFinished" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the RD4B is in motion.</p>
-<p>This function gets the closed loop error, which will be very small if
-the motor is not currently in motion.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if the RD4B is not in motion
-False if the RD4B is currently still in motion.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.load_config_values">
-<code class="descname">load_config_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.load_config_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.load_config_values" title="Permalink to this definition">¶</a></dt>
-<dd><p>Internal helper function for configuration values.</p>
-<p>This function loads/reloads configuration values from Preferences.
-The necessary keys that need to be defined are:</p>
-<ul class="simple">
-<li>“lift potentiometer horizontal angle”</li>
-<li>“lift potentiometer base angle”</li>
-<li>“lift limit up”</li>
-</ul>
-<p>This function also precalculates values that are used throughout the
-code and sets soft limits for the motor based on encoder values.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.set_height">
-<code class="descname">set_height</code><span class="sig-paren">(</span><em>inches</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.set_height"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.set_height" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the height for the RD4B lift.</p>
-<p>Given a height to move to in inches, this function will calculate the
-angle the motor needs to run to and apply it. The angle is calculated
-by this equation:</p>
-<div class="math">
-\[\theta _f = \sin^{-1}(\frac{\Delta H}{2 l_{arm}}
-+ \sin(\theta_i))\]</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inches</strong> – the height in inches to move the RD4B to.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="lift.lift.RD4BLift.stop">
-<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#RD4BLift.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.RD4BLift.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stop the RD4B, no matter what position it is in currently.</p>
-<p>This can be used as an emergency stop in the case of an encoder
-breaking, but it can also be used for general purposes if needed.</p>
-</dd></dl>
+<dt id="lift.lift.ManualControlLift.setLiftPower">
+<code class="descname">setLiftPower</code><span class="sig-paren">(</span><em>power</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lift/lift.html#ManualControlLift.setLiftPower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lift.lift.ManualControlLift.setLiftPower" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -317,6 +198,7 @@ breaking, but it can also be used for general purposes if needed.</p>
 <li class="toctree-l2"><a class="reference internal" href="swerve.html">swerve package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="teleop.html">teleop module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vision.html">vision package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="winch.html">winch package</a></li>
 </ul>
 </li>
 </ul>
@@ -350,7 +232,7 @@ breaking, but it can also be used for general purposes if needed.</p>
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |

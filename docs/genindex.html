@@ -52,6 +52,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
@@ -59,14 +60,13 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="swerve.html#swerve.swerve_module.SwerveModule.apply_control_values">apply_control_values() (swerve.swerve_module.SwerveModule method)</a>
-</li>
-      <li><a href="lift.html#lift.lift.RD4BLift.ARM_LENGTH">ARM_LENGTH (lift.lift.RD4BLift attribute)</a>
 </li>
       <li><a href="autonomous.html#autonomous.Autonomous">Autonomous (class in autonomous)</a>
 </li>
@@ -92,18 +92,14 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="constants.html#constants.chassis_length">chassis_length (in module constants)</a>
-</li>
-      <li><a href="constants.html#constants.chassis_width">chassis_width (in module constants)</a>
-</li>
       <li><a href="lift.html#lift.claw.Claw">Claw (class in lift.claw)</a>
 </li>
       <li><a href="lift.html#lift.claw.Claw.claw_adjust_time">claw_adjust_time (lift.claw.Claw attribute)</a>
 </li>
+      <li><a href="lift.html#lift.claw.Claw.claw_movement_time">claw_movement_time (lift.claw.Claw attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="lift.html#lift.claw.Claw.claw_open_time">claw_open_time (lift.claw.Claw attribute)</a>
-</li>
       <li><a href="vision.html#vision.visionmaster.VisionMaster.clear_commands">clear_commands() (vision.visionmaster.VisionMaster method)</a>
 </li>
       <li><a href="lift.html#lift.claw.Claw.close">close() (lift.claw.Claw method)</a>
@@ -144,12 +140,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="teleop.html#teleop.Teleop.foc_enabled">foc_enabled (teleop.Teleop attribute)</a>
 </li>
-      <li><a href="lift.html#lift.lift.RD4BLift.fully_extend">fully_extend() (lift.lift.RD4BLift method)</a>
+      <li><a href="winch.html#winch.winch.Winch.forward">forward() (winch.winch.Winch method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="lift.html#lift.lift.RD4BLift.fully_retract">fully_retract() (lift.lift.RD4BLift method)</a>
-</li>
       <li><a href="constants.html#constants.fwdAxis">fwdAxis (in module constants)</a>
 </li>
       <li><a href="constants.html#constants.fwdInv">fwdInv (in module constants)</a>
@@ -166,17 +160,15 @@
 </li>
       <li><a href="vision.html#vision.visionmaster.VisionMaster.get_location">get_location() (vision.visionmaster.VisionMaster method)</a>
 </li>
-      <li><a href="swerve.html#swerve.swerve_drive.SwerveDrive.get_module_distances">get_module_distances() (swerve.swerve_drive.SwerveDrive method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="swerve.html#swerve.swerve_drive.SwerveDrive.get_module_distances">get_module_distances() (swerve.swerve_drive.SwerveDrive method)</a>
+</li>
       <li><a href="sensors.html#sensors.imu.IMU.get_robot_heading">get_robot_heading() (sensors.imu.IMU method)</a>
 </li>
       <li><a href="swerve.html#swerve.swerve_module.SwerveModule.get_steer_angle">get_steer_angle() (swerve.swerve_module.SwerveModule method)</a>
 </li>
       <li><a href="sensors.html#sensors.imu.IMU.get_yaw_rate">get_yaw_rate() (sensors.imu.IMU method)</a>
-</li>
-      <li><a href="lift.html#lift.lift.RD4BLift.getHeight">getHeight() (lift.lift.RD4BLift method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -186,13 +178,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="sensors.html#sensors.imu.IMU">IMU (class in sensors.imu)</a>
 </li>
-      <li><a href="autonomous.html#autonomous.Autonomous.init_lift_height">init_lift_height (autonomous.Autonomous attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sensors.html#sensors.imu.IMU.is_present">is_present() (sensors.imu.IMU method)</a>
+      <li><a href="autonomous.html#autonomous.Autonomous.init_lift_height">init_lift_height (autonomous.Autonomous attribute)</a>
 </li>
-      <li><a href="lift.html#lift.lift.RD4BLift.isMovementFinished">isMovementFinished() (lift.lift.RD4BLift method)</a>
+      <li><a href="sensors.html#sensors.imu.IMU.is_present">is_present() (sensors.imu.IMU method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -212,25 +202,33 @@
 </li>
       <li><a href="autonomous.html#autonomous.Autonomous.lift_height_tolerance">lift_height_tolerance (autonomous.Autonomous attribute)</a>
 </li>
-      <li><a href="constants.html#constants.lift_ids">lift_ids (in module constants)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="constants.html#constants.lift_ids">lift_ids (in module constants)</a>
+</li>
       <li><a href="constants.html#constants.liftAxis">liftAxis (in module constants)</a>
 </li>
-      <li><a href="constants.html#constants.liftInv">liftInv (in module constants)</a>
-</li>
-      <li><a href="lift.html#lift.lift.RD4BLift.load_config_values">load_config_values() (lift.lift.RD4BLift method)</a>
+      <li><a href="swerve.html#swerve.swerve_drive.SwerveDrive.load_config_values">load_config_values() (swerve.swerve_drive.SwerveDrive method)</a>
 
       <ul>
-        <li><a href="swerve.html#swerve.swerve_drive.SwerveDrive.load_config_values">(swerve.swerve_drive.SwerveDrive method)</a>
-</li>
         <li><a href="swerve.html#swerve.swerve_module.SwerveModule.load_config_values">(swerve.swerve_module.SwerveModule method)</a>
 </li>
       </ul></li>
       <li><a href="constants.html#constants.load_control_config">load_control_config() (in module constants)</a>
 </li>
       <li><a href="vision.html#vision.visionmaster.VisionMaster.locate">locate() (vision.visionmaster.VisionMaster method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lift.html#lift.lift.ManualControlLift">ManualControlLift (class in lift.lift)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lift.html#lift.lift.ManualControlLift.moveTimed">moveTimed() (lift.lift.ManualControlLift method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -268,18 +266,18 @@
 </li>
       <li><a href="constants.html#constants.rcwInv">rcwInv (in module constants)</a>
 </li>
-      <li><a href="lift.html#lift.lift.RD4BLift">RD4BLift (class in lift.lift)</a>
-</li>
       <li><a href="sensors.html#sensors.ultrasonic.Ultrasonic.read_distance">read_distance() (sensors.ultrasonic.Ultrasonic method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="swerve.html#swerve.swerve_drive.SwerveDrive.reset_drive_position">reset_drive_position() (swerve.swerve_drive.SwerveDrive method)</a>
 
       <ul>
         <li><a href="swerve.html#swerve.swerve_module.SwerveModule.reset_drive_position">(swerve.swerve_module.SwerveModule method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="winch.html#winch.winch.Winch.reverse">reverse() (winch.winch.Winch method)</a>
+</li>
       <li><a href="robot.html#robot.Robot">Robot (class in robot)</a>
 </li>
       <li><a href="robot.html#module-robot">robot (module)</a>
@@ -318,9 +316,9 @@
 </li>
       <li><a href="swerve.html#swerve.swerve_module.SwerveModule.set_drive_speed">set_drive_speed() (swerve.swerve_module.SwerveModule method)</a>
 </li>
-      <li><a href="lift.html#lift.lift.RD4BLift.set_height">set_height() (lift.lift.RD4BLift method)</a>
-</li>
       <li><a href="swerve.html#swerve.swerve_module.SwerveModule.set_steer_angle">set_steer_angle() (swerve.swerve_module.SwerveModule method)</a>
+</li>
+      <li><a href="lift.html#lift.lift.ManualControlLift.setLiftPower">setLiftPower() (lift.lift.ManualControlLift method)</a>
 </li>
       <li><a href="autonomous.html#autonomous.Autonomous.state_drive">state_drive() (autonomous.Autonomous method)</a>
 </li>
@@ -340,7 +338,7 @@
 </li>
       <li><a href="autonomous.html#autonomous.Autonomous.state_turn">state_turn() (autonomous.Autonomous method)</a>
 </li>
-      <li><a href="lift.html#lift.lift.RD4BLift.stop">stop() (lift.lift.RD4BLift method)</a>
+      <li><a href="winch.html#winch.winch.Winch.stop">stop() (winch.winch.Winch method)</a>
 </li>
       <li><a href="constants.html#constants.strAxis">strAxis (in module constants)</a>
 </li>
@@ -435,6 +433,22 @@
   </ul></td>
 </tr></table>
 
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="winch.html#winch.winch.Winch">Winch (class in winch.winch)</a>
+</li>
+      <li><a href="winch.html#module-winch">winch (module)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="winch.html#module-winch.winch">winch.winch (module)</a>
+</li>
+      <li><a href="teleop.html#teleop.Teleop.winch_control">winch_control() (teleop.Teleop method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 
 
           </div>
@@ -482,7 +496,7 @@
       &copy;2018, Dragon Robotics.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
     </div>

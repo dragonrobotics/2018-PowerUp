@@ -1,0 +1,22 @@
+winch package
+=============
+
+Submodules
+----------
+
+winch\.winch module
+-------------------
+
+.. automodule:: winch.winch
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: winch
+    :members:
+    :undoc-members:
+    :show-inheritance:
