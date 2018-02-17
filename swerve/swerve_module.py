@@ -84,12 +84,15 @@ class SwerveModule(object):
             370
         )
 
-        sensor_phase = preferences.getBoolean(
+        self.drive_talon.setSensorPhase(preferences.getBoolean(
             self.name+'-Sensor Reverse',
             False
-        )
+        ))
 
-        self.drive_talon.setSensorPhase(sensor_phase)
+        self.steer_talon.setSensorPhase(preferences.getBoolean(
+            self.name+'-Steer Sensor Reverse',
+            False
+        ))
 
         self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
         if _apply_range_hack:
