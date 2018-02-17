@@ -54,6 +54,15 @@ class SwerveModule(object):
             0, math.ceil(_acceptable_steer_err), 0
         )
 
+        # Reset Talon analog position
+        self.steer_talon.setAnalogPosition(
+            self.steer_talon.getAnalogInRaw(), 0
+        )
+        
+        self.steer_talon.setSelectedSensorPosition(
+            self.steer_talon.getAnalogInRaw(), 0, 0
+        )
+
         self.drive_talon.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0)  # noqa: E501
         self.drive_talon.setQuadraturePosition(0, 0)
 
