@@ -42,11 +42,7 @@ def __load_preference(key, backup):
         getMethod = lambda k, b: float(prefs.getFloat(k, b))  # noqa: E731
         putMethod = lambda k, v: prefs.putFloat(k, float(v))  # noqa: E731
 
-    if not prefs.containsKey(key):
-        putMethod(key, backup)
-        return backup
-    else:
-        return getMethod(key, backup)
+    return getMethod(key, backup)
 
 
 def load_control_config():
