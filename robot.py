@@ -87,8 +87,8 @@ class Robot(wpilib.IterativeRobot):
         self.drive_update_timer.start()
 
     def teleopPeriodic(self):
-        # For now: basic driving
         constants.load_control_config()
+        self.drivetrain.load_config_values()
 
         self.teleop.drive()
         self.teleop.buttons()
