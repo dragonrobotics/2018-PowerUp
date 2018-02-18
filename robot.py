@@ -50,6 +50,9 @@ class Robot(wpilib.IterativeRobot):
         pass
 
     def disabledPeriodic(self):
+        self.lift.load_config_values()
+        self.drivetrain.load_config_values()
+
         self.drivetrain.update_smart_dashboard()
         self.imu.update_smart_dashboard()
         self.lift.update_smart_dashboard()
@@ -61,6 +64,8 @@ class Robot(wpilib.IterativeRobot):
 
     def autonomousInit(self):
         self.drivetrain.load_config_values()
+        self.lift.load_config_values()
+
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
         self.auto.periodic()
 
@@ -76,15 +81,13 @@ class Robot(wpilib.IterativeRobot):
     def teleopInit(self):
         self.teleop = Teleop(self)
         self.drivetrain.load_config_values()
+        self.lift.load_config_values()
         constants.load_control_config()
-        self.drive_update_timer = wpilib.Timer()
-
-        self.drive_update_timer.reset()
-        self.drive_update_timer.start()
 
     def teleopPeriodic(self):
         constants.load_control_config()
         self.drivetrain.load_config_values()
+        self.lift.load_config_values()
 
         self.teleop.drive()
         self.teleop.buttons()
