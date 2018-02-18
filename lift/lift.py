@@ -47,7 +47,7 @@ class RD4BLift:
         # the left motor as Position control mode, and have the right motor
         # follow it.
         self.left_motor.configSelectedFeedbackSensor(
-            TalonSRX.FeedbackDevice.Analog, 0, 0
+            TalonSRX.FeedbackDevice.PulseWidthEncodedPosition, 0, 0
         )
         self.left_motor.selectProfileSlot(0, 0)
 
@@ -84,7 +84,7 @@ class RD4BLift:
         # pre-convert the initial angle to radians and take the sin of the
         # angle.
         self.INITIAL_ANGLE_RADIANS_SIN = math.sin(
-            (self.initial_angle - self.HORIZONTAL_ANGLE) / 512 * math.pi)
+            (self.initial_angle - self.HORIZONTAL_ANGLE) * (math.pi / (3*512)))
 
         # get the upper limit of the encoder, or the encoder value when the
         # RD4B is fully extended upward.
@@ -131,7 +131,7 @@ class RD4BLift:
 
         # convert this final angle from radians to native units.
         native_units = (
-            (final_angle_radians * 512 / math.pi)
+            (final_angle_radians * ((3*512) / math.pi))
             + self.HORIZONTAL_ANGLE
         )
 
@@ -157,7 +157,7 @@ class RD4BLift:
         # get the final angle from the encoder, and convert to radians.
         final_angle_radians = (
             (self.left_motor.getSelectedSensorPosition(0) - self.HORIZONTAL_ANGLE)  # noqa: E501
-            * 512 * math.pi
+            * (math.pi / (3*512))
         )
 
         # calculate the height of the RD4B using the final angle and based on
