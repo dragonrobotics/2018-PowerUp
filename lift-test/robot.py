@@ -1,3 +1,15 @@
+"""
+This program is intended to be used for lift testing and lift control tuning.
+
+Teleop mode will control the lift using the 4th axis on the second controller;
+this normally corresponds to the throttle slider.
+
+Autonomous mode will attempt to drive the lift to a height of 3 feet.
+
+Everything can be configured either from Preferences or from the Robot class
+member variables.
+"""
+
 import math
 from ctre.talonsrx import TalonSRX
 import wpilib
@@ -7,16 +19,22 @@ angle_conv_factor = math.pi / (512 * 3)
 
 
 class Robot(wpilib.IterativeRobot):
+    # Lift talon IDs:
     main_lift_id = 14
     follower_id = 15
+
+    # Lift of one stage of the RD4B, in inches
     ARM_LENGTH = 28
+
+    controller_index = 1
+    control_axis_index = 4
 
     def __load_config(self):
         self.max_height = self.__prefs.getFloat("Lift Max Height", 96)
 
         # get the encoder value when the bars are horizontal and form right
         # angles.  This is used for calculations.
-        self.HORIZONTAL_ANGLE = self.__prefs.getFloat("lift Pot Horizontal Position", 0)  # noqa: E501
+        self.HORIZONTAL_ANGLE = self.__prefs.getFloat("Lift Pot Horizontal Position", 0)  # noqa: E501
 
         # get the encoder value when the RD4B is in the fully down position.
         self.initial_angle = self.__prefs.getFloat("Lift Pot Lower Limit", 0)  # noqa: E501
@@ -29,7 +47,7 @@ class Robot(wpilib.IterativeRobot):
 
         # get the upper limit of the encoder, or the encoder value when the
         # RD4B is fully extended upward.
-        self.LIMIT_UP = self.__prefs.getFloat("Lift Upper Limit", 0)
+        self.LIMIT_UP = self.__prefs.getFloat("Lift Pot Upper Limit", 0)
 
         # set the soft limits to LIMIT_UP and the initial angle. the motors
         # should not go outside of this range.
@@ -78,7 +96,7 @@ class Robot(wpilib.IterativeRobot):
         self.lift_main.set(TalonSRX.ControlMode.Position, native_units)
 
     def robotInit(self):
-        self.stick = wpilib.Joystick(0)
+        self.stick = wpilib.Joystick(self.controller_index)
         self.__prefs = wpilib.Preferences.getInstance()
 
         self.lift_main = TalonSRX(self.main_lift_id)
@@ -114,11 +132,12 @@ class Robot(wpilib.IterativeRobot):
         self.__load_config()
 
     def teleopPeriodic(self):
-        pct_pos = self.stick.getRawAxis(0)
+        pct_pos = self.stick.getRawAxis(self.control_axis_index)
         tgt_height = self.max_height * pct_pos
 
         self.__set_lift_height(tgt_height)
         self.__update_smart_dashboard()
+
 
 if __name__ == '__main__':
     wpilib.run(Robot)
