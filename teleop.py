@@ -73,7 +73,7 @@ class Teleop:
                 self.robot.winch.forward()
             else:
                 self.robot.winch.forward()
-                self.robot.lift.setLiftPower(0.2)
+                self.robot.lift.setLiftPower(0.35)
         elif self.throttle.getRawButton(3):
             self.robot.winch.forward()
         elif self.throttle.getRawButton(2):
