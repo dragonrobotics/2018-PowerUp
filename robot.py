@@ -57,23 +57,25 @@ class Robot(wpilib.IterativeRobot):
         self.drivetrain.update_smart_dashboard()
         self.imu.update_smart_dashboard()
         self.lift.update_smart_dashboard()
+        self.winch.update_smart_dashboard()
 
         wpilib.SmartDashboard.putNumber(
             "Throttle Pos", self.throttle.getRawAxis(constants.liftAxis)
         )
 
     def autonomousInit(self):
-        #self.drivetrain.load_config_values()
+        self.drivetrain.load_config_values()
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
-        # self.auto.periodic()
+        self.auto.periodic()
 
     def autonomousPeriodic(self):
         self.auto.update_smart_dashboard()
         self.imu.update_smart_dashboard()
         self.drivetrain.update_smart_dashboard()
         self.lift.update_smart_dashboard()
+        self.winch.update_smart_dashboard()
 
-        # self.auto.periodic()
+        self.auto.periodic()
 
     def teleopInit(self):
         self.teleop = Teleop(self)
@@ -86,19 +88,19 @@ class Robot(wpilib.IterativeRobot):
 
     def teleopPeriodic(self):
         # For now: basic driving
-        #constants.load_control_config()
-
-        #if self.drive_update_timer.hasPeriodPassed(0.5):
+        constants.load_control_config()
 
         self.teleop.drive()
         self.teleop.buttons()
-        #self.teleop.lift_control()
-        #self.teleop.claw_control()
+        self.teleop.lift_control()
+        self.teleop.claw_control()
+        self.teleop.winch_control()
 
         self.drivetrain.update_smart_dashboard()
-        #self.teleop.update_smart_dashboard()
+        self.teleop.update_smart_dashboard()
         self.imu.update_smart_dashboard()
         self.lift.update_smart_dashboard()
+        self.winch.update_smart_dashboard()
 
 
 if __name__ == "__main__":

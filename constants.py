@@ -21,6 +21,8 @@ turn_sensitivity = 0.25
 lift_deadband = 0.25  # deadband
 lift_coeff = 0.20
 
+winch_slack = -17450
+
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
 def __load_preference(key, backup):
@@ -62,7 +64,7 @@ def load_control_config():
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
 
     strAxis = __load_preference('Control: Left-Right Axis', backup=0)
-    strInv = __load_preference('Control: L-R Axis Inverted', backup=True)
+    strInv = __load_preference('Control: L-R Axis Inverted', backup=False)
 
     rcwAxis = __load_preference('Control: Rotation Axis', backup=2)
     rcwInv = __load_preference('Control: Rot Axis Inverted', backup=True)
@@ -73,7 +75,7 @@ def load_control_config():
         'Control: Lift Control Deadband', backup=0.25
     )
     lift_coeff = __load_preference(
-        'Control: Lift Control Coefficient', backup=0.20
+        'Control: Lift Control Coefficient', backup=0.3
     )
 
     teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
