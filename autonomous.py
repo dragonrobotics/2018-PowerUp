@@ -28,6 +28,7 @@ import math
 import wpilib
 import numpy as np
 from collections import deque
+from ctre.talonsrx import TalonSRX
 
 
 class Autonomous:
@@ -53,6 +54,10 @@ class Autonomous:
             (0, 0)
         ],
 
+        "a_sane_path_name": [
+            (-168, -30)
+        ],
+
         "1": [
                 # change this
                 (-40, -40),
@@ -75,7 +80,7 @@ class Autonomous:
     # Internal code starts here.
     ##################################################################
 
-    turn_angle_tolerance = 2.5  #: a tolerance range for turning, in degrees.
+    turn_angle_tolerance = math.radians(2.5)  #: a tolerance range for turning
     drive_dist_tolerance = 3  #: a tolerance range for driving, in inches.
     lift_height_tolerance = 2  #: a tolerance range for lifting, in inches.
     drive_speed = 100  #: how fast to drive, in native units per 100ms
@@ -93,10 +98,12 @@ class Autonomous:
 
         # basic initalization.
         self.robot = robot
-        self.target = None
+        self.target = np.array([-168, -60])
         self.target_height = 36  # inches -- set this according to target
         self.final_drive_dist = 6  # inches
+
         self.robot.drivetrain.reset_drive_position()
+        self.robot.imu.reset()
 
         # get preferences and the field string from the Game Data API.
         ds = wpilib.DriverStation.getInstance()
@@ -107,7 +114,7 @@ class Autonomous:
             field_string = 'LLL'
 
         # Get the corresponding path of the given field string from preferences
-        path = self.PATHS[prefs.getString(field_string, backup='default')]
+        path = self.PATHS['a_sane_path_name'] #self.PATHS[prefs.getString(field_string, backup='default')]
         self.waypoints = [np.asarray(point) for point in path]
 
         # set current position. TODO: implement.
@@ -119,6 +126,9 @@ class Autonomous:
         self.state = 'init'
         self.__module_angle_err_window = deque([], 30)
 
+        self.hack_timer = wpilib.Timer()
+        self.hack_timer_started = False
+
     def state_init(self):
         """
         Perform robot-oriented initializations.
@@ -126,6 +136,44 @@ class Autonomous:
         Close the claw and set the lift to its lowest position, then transition
         into the turning state.
         """
+        self.robot.drivetrain.set_all_module_angles(0)
+
+        if not self.hack_timer_started:
+            self.hack_timer.reset()
+            self.hack_timer.start()
+            self.hack_timer_started = True
+        else:
+            #
+            init_time = self.hack_timer.get()
+            if init_time < 0.5:
+                self.robot.lift.setLiftPower(-0.6)
+                self.robot.claw.talon.set(
+                    TalonSRX.ControlMode.PercentOutput, 1
+                )
+                self.robot.drivetrain.set_all_module_speeds(150, True)
+            elif init_time < 1:
+                self.robot.lift.setLiftPower(0)
+                self.robot.claw.talon.set(
+                    TalonSRX.ControlMode.PercentOutput, 0
+                )
+                self.robot.drivetrain.set_all_module_speeds(200, True)
+            elif init_time < 1.5:
+                self.robot.drivetrain.set_all_module_speeds(-200, True)
+            elif self.hack_timer.get() > 1.5:
+                self.robot.drivetrain.set_all_module_speeds(0, True)
+                self.robot.claw.talon.set(
+                    TalonSRX.ControlMode.PercentOutput, 0
+                )
+
+                self.hack_timer_started = False
+
+                # Get distance driven forwards during the unfold maneuver
+                # By default we drive in the -X direction apparently?
+                dist = np.mean(self.robot.drivetrain.get_module_distances())
+                dist *= (4 * math.pi) / (80 * 6.67)
+                self.current_pos[0] -= dist
+
+                self.state = 'turn'
 
         # self.robot.claw.close()  # put claw into 'closing' state
         # self.robot.lift.set_height(self.init_lift_height)
@@ -137,9 +185,6 @@ class Autonomous:
         #    <= self.lift_height_tolerance
         # ):
 
-        self.robot.drivetrain.set_all_module_angles(0)
-        self.robot.drivetrain.set_all_module_speeds(0, direct=True)
-        self.state = 'turn'
 
     def state_turn(self):
         """
@@ -218,7 +263,7 @@ class Autonomous:
                 self.robot.drivetrain.reset_drive_position()
                 self.state = 'turn'
             else:
-                self.state = 'lift'
+                self.state = 'target-turn'
 
     def state_lift(self):
         """
@@ -251,13 +296,13 @@ class Autonomous:
 
         # we are actually going to turn the whole chassis this time, using the
         # navx to ensure we are doing things correctly.
-        self.robot.drivetrain.turn_to_angle(self.robot.imu, tgt_angle)
-
+        self.robot.drivetrain.drive(0, 0, 0.1)
         hdg = self.robot.imu.get_robot_heading()
 
         # if we are at the proper angle now, move to the target-drive state.
-        if abs(hdg - math.degrees(tgt_angle)) <= self.turn_angle_tolerance:
+        if abs(hdg - tgt_angle) <= self.turn_angle_tolerance:
             self.robot.drivetrain.set_all_module_speeds(0, True)
+            self.robot.drivetrain.reset_drive_position()
             self.state = 'target-drive'
 
     def state_target_drive(self):
@@ -280,7 +325,22 @@ class Autonomous:
         Open the claw and drop the cube.
         """
         self.robot.drivetrain.set_all_module_speeds(0, True)
-        self.robot.claw.open()
+
+        if not self.hack_timer_started:
+            self.hack_timer.reset()
+            self.hack_timer.start()
+            self.hack_timer_started = True
+        else:
+            t = self.hack_timer.get()
+            if t < 0.5:
+                self.robot.claw.talon.set(
+                    TalonSRX.ControlMode.PercentOutput, -1
+                )
+            else:
+                self.robot.claw.talon.set(
+                    TalonSRX.ControlMode.PercentOutput, 0
+                )
+
 
     #: Maps state names to functions.
     state_table = {
@@ -297,17 +357,8 @@ class Autonomous:
         """
         Updates and progresses the autonomous state machine.
         """
-        # TODO: Only run autonomous if in Drive or Turn states;
-        # this is for testing purposes only.
-        if (
-            self.state == "init" or
-            self.state == "drive" or
-            self.state == "turn"
-        ):
-            # Call function corresponding to current state.
-            self.state_table[self.state](self)
-        else:
-            self.robot.drivetrain.set_all_module_speeds(0, direct=True)
+        # Call function corresponding to current state.
+        self.state_table[self.state](self)
 
     def update_smart_dashboard(self):
         """

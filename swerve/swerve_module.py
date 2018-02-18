@@ -159,11 +159,11 @@ class SwerveModule(object):
                 where 0 points in the chassis forward direction.
         """
         n_rotations = math.trunc(
-            (self.steer_talon.getClosedLoopTarget(0) - self.steer_offset)
+            (self.steer_talon.getSelectedSensorPosition(0) - self.steer_offset)
             / self.steer_range
         )
 
-        current_angle = self.steer_talon.getClosedLoopTarget(0)
+        current_angle = self.steer_talon.getSelectedSensorPosition(0)
         current_angle -= self.steer_offset
         current_angle *= (math.pi / 512)
 

@@ -64,15 +64,23 @@ class Teleop:
             TalonSRX.ControlMode.PercentOutput, clawPct
         )
 
-    def winch_control(self, val):
-        if val == 1:
+    def winch_control(self):
+        if self.throttle.getRawButton(1):
+            if (
+                self.robot.winch.talon.getSelectedSensorPosition(0)
+                > constants.winch_slack
+            ):
+                self.robot.winch.forward()
+            else:
+                self.robot.winch.forward()
+                self.robot.lift.setLiftPower(0.2)
+        elif self.throttle.getRawButton(3):
             self.robot.winch.forward()
-        elif val == 0:
-            self.robot.winch.stop()
-        elif val == -1:
+        elif self.throttle.getRawButton(2):
             self.robot.winch.reverse()
         else:
-            pass
+            self.robot.winch.stop()
+
 
     def drive(self):
         """
