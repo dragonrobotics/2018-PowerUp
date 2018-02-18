@@ -132,12 +132,12 @@ class Autonomous:
             field_string = 'LLL'
 
         if field_string[0] == 'L':
-            self.target = left_switch_coords
+            self.target = left_switch
             self.init_turn_angle = math.radians(270)
 
             self.waypoints = self.PATHS['direct-left']
         else:
-            self.target = right_switch_coords
+            self.target = right_switch
             self.init_turn_angle = math.radians(90)
 
             self.waypoints = self.PATHS['direct-right']
