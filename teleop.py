@@ -7,6 +7,7 @@ import constants
 from robotpy_ext.control.button_debouncer import ButtonDebouncer
 from ctre.talonsrx import TalonSRX
 
+
 class Teleop:
     last_applied_control = np.array([0, 0, 0])
     foc_enabled = False
@@ -80,7 +81,6 @@ class Teleop:
             self.robot.winch.reverse()
         else:
             self.robot.winch.stop()
-
 
     def drive(self):
         """

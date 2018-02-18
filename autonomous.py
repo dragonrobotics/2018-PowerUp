@@ -44,6 +44,7 @@ staging_right = np.array((120, 279.5))
 align_pt_left = np.array((168, 48.5))
 align_pt_right = np.array((168, 279.5))
 
+
 class Autonomous:
     """
     This class implements a finite-state automaton for controlling autonomous.
@@ -126,7 +127,6 @@ class Autonomous:
         # get preferences and the field string from the Game Data API.
         ds = wpilib.DriverStation.getInstance()
         field_string = ds.getGameSpecificMessage().upper()
-        prefs = wpilib.Preferences.getInstance()
 
         if field_string == "":  # this only happens during tests
             field_string = 'LLL'
@@ -372,7 +372,6 @@ class Autonomous:
                 self.robot.claw.talon.set(
                     TalonSRX.ControlMode.PercentOutput, 0
                 )
-
 
     #: Maps state names to functions.
     state_table = {

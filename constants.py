@@ -23,26 +23,21 @@ lift_coeff = 0.20
 
 winch_slack = 8585
 
+
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
 def __load_preference(key, backup):
     prefs = wpilib.Preferences.getInstance()
 
     getMethod = None
-    putMethod = None
-
     if isinstance(backup, str):
         getMethod = prefs.getString
-        putMethod = prefs.putString
     elif isinstance(backup, bool):
         getMethod = prefs.getBoolean
-        putMethod = prefs.putBoolean
     elif isinstance(backup, int):
         getMethod = lambda k, b: int(prefs.getInt(k, b))  # noqa: E731
-        putMethod = lambda k, v: prefs.putInt(k, int(v))  # noqa: E731
     elif isinstance(backup, float):
         getMethod = lambda k, b: float(prefs.getFloat(k, b))  # noqa: E731
-        putMethod = lambda k, v: prefs.putFloat(k, float(v))  # noqa: E731
 
     return getMethod(key, backup)
 

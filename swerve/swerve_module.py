@@ -216,7 +216,6 @@ class SwerveModule(object):
         self.drive_talon.selectProfileSlot(1, 0)
         self.drive_talon.config_kF(0, 1023 / self.max_speed, 0)
 
-        #self.drive_talon.set(ControlMode.PercentOutput, 0)
         if direct:
             self.drive_talon.set(ControlMode.Velocity, speed)
         else:
@@ -269,7 +268,6 @@ class SwerveModule(object):
             self.name+' Raw Position',
             self.steer_talon.getAnalogIn()
         )
-
 
         wpilib.SmartDashboard.putNumber(
             self.name+' CL Position',

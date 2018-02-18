@@ -1,10 +1,11 @@
+"""
+Author: Chris McKinnon
+"""
+
 from ctre.talonsrx import TalonSRX
 import wpilib
 
 
-"""
-Author: Chris McKinnon
-"""
 class Winch:
     def __init__(self, talon_id):
         self.talon = TalonSRX(talon_id)

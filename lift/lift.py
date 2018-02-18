@@ -1,4 +1,3 @@
-import math
 import wpilib
 from ctre.talonsrx import TalonSRX
 

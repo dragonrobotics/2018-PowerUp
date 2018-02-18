@@ -6,13 +6,13 @@ import winch
 from teleop import Teleop
 from autonomous import Autonomous
 from sensors.imu import IMU
-from ctre.talonsrx import TalonSRX
+
 
 class Robot(wpilib.IterativeRobot):
     def robotInit(self):
         constants.load_control_config()
 
-        #wpilib.CameraServer.launch('driver_vision.py:main')
+        wpilib.CameraServer.launch('driver_vision.py:main')
 
         self.autoPositionSelect = wpilib.SendableChooser()
         self.autoPositionSelect.addDefault('Middle', 'Middle')
@@ -47,10 +47,6 @@ class Robot(wpilib.IterativeRobot):
         self.imu = IMU(wpilib.SPI.Port.kMXP)
 
     def disabledInit(self):
-        # We don't really _need_ to reload configuration in
-        # every init call-- it's just useful for debugging.
-        # (no need to restart robot code just to load new values)
-        #self.drivetrain.load_config_values()
         pass
 
     def disabledPeriodic(self):
