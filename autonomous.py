@@ -38,6 +38,7 @@ left_switch = np.array((168, 164-54))
 right_switch = np.array((168, 164+54))
 
 staging_left = np.array((120, 48.5))
+staging_mid = np.array((120, 164+54))
 staging_right = np.array((120, 279.5))
 
 align_pt_left = np.array((168, 48.5))
@@ -78,6 +79,18 @@ class Autonomous:
         "direct-right": [
             staging_right,
             align_pt_right
+        ],
+
+        "baseline-left": [
+            staging_left
+        ],
+
+        "baseline-mid": [
+            staging_mid
+        ],
+
+        "baseline-right": [
+            staging_right
         ]
     }
 
@@ -220,7 +233,7 @@ class Autonomous:
 
         # trigonometry to find the angle, then set the module angles.
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
-        tgt_angle += self.robot.imu.get_robot_heading()
+        tgt_angle -= self.robot.imu.get_robot_heading()
 
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
         self.robot.drivetrain.set_all_module_speeds(0, direct=True)
@@ -257,7 +270,7 @@ class Autonomous:
         dist = np.sqrt(np.sum(disp_vec**2))
 
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
-        tgt_angle += self.robot.imu.get_robot_heading()
+        tgt_angle -= self.robot.imu.get_robot_heading()
         self.robot.drivetrain.set_all_module_angles(tgt_angle)
 
         # get the average distance the robot has gone so far
