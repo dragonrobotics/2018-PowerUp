@@ -68,7 +68,7 @@ class Teleop:
         if self.throttle.getRawButton(1):
             if (
                 self.robot.winch.talon.getSelectedSensorPosition(0)
-                > constants.winch_slack
+                < constants.winch_slack
             ):
                 self.robot.winch.forward()
             else:
