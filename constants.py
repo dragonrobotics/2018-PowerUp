@@ -21,7 +21,7 @@ turn_sensitivity = 0.25
 lift_deadband = 0.25  # deadband
 lift_coeff = 0.20
 
-winch_slack = -17450
+winch_slack = 8585
 
 # Wraps the Preferences API to provide an alternative to all of the
 # getInt/getString/getWhatever methods
@@ -71,7 +71,7 @@ def load_control_config():
         'Control: Lift Control Deadband', backup=0.25
     )
     lift_coeff = __load_preference(
-        'Control: Lift Control Coefficient', backup=0.3
+        'Control: Lift Control Coefficient', backup=0.5
     )
 
     teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
