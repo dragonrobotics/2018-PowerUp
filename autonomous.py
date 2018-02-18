@@ -30,6 +30,18 @@ import numpy as np
 from collections import deque
 from ctre.talonsrx import TalonSRX
 
+start_pos_left = np.array((21.25, 82.5))
+start_pos_middle = np.array((21.25, 197))
+start_pos_right = np.array((21.25, 263.5))
+
+left_switch = np.array((168, 164-54))
+right_switch = np.array((168, 164+54))
+
+staging_left = np.array((120, 48.5))
+staging_right = np.array((120, 279.5))
+
+align_pt_left = np.array((168, 48.5))
+align_pt_right = np.array((168, 279.5))
 
 class Autonomous:
     """
@@ -46,34 +58,27 @@ class Autonomous:
     #: Dictionary of paths (arrays of waypoints).  The right one is chosen
     #: at runtime.
     PATHS = {
-        "default": [
-            (-24, 0),
-            (-24, 24),
-            (-60, 24),
-            (-60, 0),
-            (0, 0)
+        "l-drive-left": [
+            start_pos_left,
+            staging_left,
+            align_pt_left
         ],
 
-        "a_sane_path_name": [
-            (-168, -30)
+        "l-drive-right": [
+            start_pos_right,
+            staging_right,
+            align_pt_right
         ],
 
-        "1": [
-                # change this
-                (-40, -40),
-                (-20, 10),
-                (20, 0),
-                (40, -10),
-                (0, 0),
-                (40, 40),
-                (30, 30)
-             ],
+        "direct-left": [
+            staging_left,
+            align_pt_left
+        ],
 
-        "2": [
-                # add waypoints here.
-             ],
-
-        "3": []  # etc
+        "direct-right": [
+            staging_right,
+            align_pt_right
+        ]
     }
 
     ##################################################################
@@ -98,27 +103,41 @@ class Autonomous:
 
         # basic initalization.
         self.robot = robot
-        self.target = np.array([-168, -60])
+        self.target = None
         self.target_height = 36  # inches -- set this according to target
-        self.final_drive_dist = 6  # inches
+        self.final_drive_dist = 12  # inches
 
         self.robot.drivetrain.reset_drive_position()
         self.robot.imu.reset()
 
         # get preferences and the field string from the Game Data API.
         ds = wpilib.DriverStation.getInstance()
-        field_string = ds.getGameSpecificMessage()
+        field_string = ds.getGameSpecificMessage().upper()
         prefs = wpilib.Preferences.getInstance()
 
         if field_string == "":  # this only happens during tests
             field_string = 'LLL'
 
-        # Get the corresponding path of the given field string from preferences
-        path = self.PATHS['a_sane_path_name'] #self.PATHS[prefs.getString(field_string, backup='default')]
-        self.waypoints = [np.asarray(point) for point in path]
+        if field_string[0] == 'L':
+            self.target = left_switch_coords
+            self.init_turn_angle = math.radians(270)
+
+            self.waypoints = self.PATHS['direct-left']
+        else:
+            self.target = right_switch_coords
+            self.init_turn_angle = math.radians(90)
+
+            self.waypoints = self.PATHS['direct-right']
 
         # set current position. TODO: implement.
         self.current_pos = np.array([0, 0])
+
+        if robot_position == 'Left':
+            self.current_pos = start_pos_left
+        elif robot_position == 'Middle':
+            self.current_pos = start_pos_middle
+        elif robot_position == 'Right':
+            self.current_pos = start_pos_right
 
         # active waypoint: the waypoint we are currently headed towards.
         self.active_waypoint_idx = 0
@@ -173,18 +192,17 @@ class Autonomous:
                 dist *= (4 * math.pi) / (80 * 6.67)
                 self.current_pos[0] -= dist
 
-                self.state = 'turn'
+                self.state = 'init-turn'
 
-        # self.robot.claw.close()  # put claw into 'closing' state
-        # self.robot.lift.set_height(self.init_lift_height)
+    def state_init_turn(self):
+        self.robot.drivetrain.drive(0, 0, 0.1)
+        hdg = self.robot.imu.get_robot_heading()
 
-        # if everything is set correctly, transition to the turning state.
-        # if (
-        #    self.robot.claw.state == 'closed'
-        #    and abs(self.robot.lift.get_height() - self.init_lift_height)
-        #    <= self.lift_height_tolerance
-        # ):
-
+        # if we are at the proper angle now, move to the target-drive state.
+        if abs(hdg - self.init_turn_angle) <= self.turn_angle_tolerance:
+            self.robot.drivetrain.set_all_module_speeds(0, True)
+            self.robot.drivetrain.reset_drive_position()
+            self.state = 'turn'
 
     def state_turn(self):
         """
@@ -198,7 +216,7 @@ class Autonomous:
         # get the active waypoint, and from there calculate the displacement
         # vector relative to the robot's position.
         active_waypoint = self.waypoints[self.active_waypoint_idx]
-        disp_vec = self.current_pos - active_waypoint
+        disp_vec = active_waypoint - self.current_pos
 
         # trigonometry to find the angle, then set the module angles.
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
@@ -233,7 +251,7 @@ class Autonomous:
 
         # get active waypoint and calculate displacement vector.
         active_waypoint = self.waypoints[self.active_waypoint_idx]
-        disp_vec = self.current_pos - active_waypoint
+        disp_vec = active_waypoint - self.current_pos
 
         # calculate distance with pythagorean theorem
         dist = np.sqrt(np.sum(disp_vec**2))
@@ -274,15 +292,16 @@ class Autonomous:
         # stop the drivetrain.
         self.robot.drivetrain.set_all_module_speeds(0, True)
 
-        # set the height of the RD4B.
-        self.robot.lift.set_height(self.target_height)
-
-        # is the height there yet? if so, transition.
-        if (
-            abs(self.robot.lift.get_height() - self.target_height)
-            <= self.lift_height_tolerance
-        ):
-            self.state = 'target-turn'
+        if not self.hack_timer_started:
+            self.hack_timer.reset()
+            self.hack_timer.start()
+            self.hack_timer_started = True
+        else:
+            if self.hack_timer.get() < 1.5:
+                self.robot.lift.setLiftPower(-0.6)
+            else:
+                self.robot.lift.setLiftPower(0)
+                self.state = 'target-turn'
 
     def state_target_turn(self):
         """
@@ -291,7 +310,7 @@ class Autonomous:
         """
 
         # the usual displacement stuff.
-        disp_vec = self.current_pos - self.target
+        disp_vec = self.target - self.current_pos
         tgt_angle = np.arctan2(disp_vec[1], disp_vec[0])
 
         # we are actually going to turn the whole chassis this time, using the
@@ -345,6 +364,7 @@ class Autonomous:
     #: Maps state names to functions.
     state_table = {
         'init': state_init,
+        'init-turn': state_init_turn,
         'turn': state_turn,
         'drive': state_drive,
         'lift': state_lift,
