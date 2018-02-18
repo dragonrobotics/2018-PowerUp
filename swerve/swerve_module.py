@@ -107,8 +107,6 @@ class SwerveModule(object):
         self.steer_max = 1024
         self.steer_range = 1024
 
-        print("Read {} steer offset as: {}".format(self.name, self.steer_offset))
-
         self.drive_reversed = preferences.getBoolean(
             self.name+'-reversed', False
         )
