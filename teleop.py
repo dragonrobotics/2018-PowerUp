@@ -5,7 +5,7 @@ import wpilib
 import numpy as np
 import constants
 from robotpy_ext.control.button_debouncer import ButtonDebouncer
-
+from ctre.talonsrx import TalonSRX
 
 class Teleop:
     last_applied_control = np.array([0, 0, 0])
@@ -13,8 +13,8 @@ class Teleop:
 
     def __init__(self, robot):
         self.robot = robot
-        self.stick = wpilib.Joystick(1)
-        self.throttle = wpilib.Joystick(2)
+        self.stick = wpilib.Joystick(0)
+        self.throttle = wpilib.Joystick(1)
 
         self.prefs = wpilib.Preferences.getInstance()
 
@@ -38,7 +38,7 @@ class Teleop:
                 self.foc_enabled = not self.foc_enabled
 
         if self.switch_camera_button.get():
-            current_camera = (self.prefs.getInt('Selected Camera') + 1) % 1
+            current_camera = (self.prefs.getInt('Selected Camera', 0) + 1) % 1
             self.prefs.putInt('Selected Camera', current_camera)
 
     def lift_control(self):
@@ -50,7 +50,19 @@ class Teleop:
         if abs(liftPct) < constants.lift_deadband:
             liftPct = 0
 
+        liftPct *= constants.lift_coeff
+
+        wpilib.SmartDashboard.putNumber("Lift Power", liftPct)
+
         self.robot.lift.setLiftPower(liftPct)
+
+    def claw_control(self):
+        clawPct = self.throttle.getRawAxis(5)
+        clawPct *= 0.35
+
+        self.robot.claw.talon.set(
+            TalonSRX.ControlMode.PercentOutput, clawPct
+        )
 
     def winch_control(self, val):
         if val == 1:
@@ -68,8 +80,8 @@ class Teleop:
         """
 
         ctrl = np.array([
-            self.stick.getRawAxis(constants.fwdAxis),
-            self.stick.getRawAxis(constants.strAxis)
+            self.stick.getRawAxis(1),
+            self.stick.getRawAxis(0)
         ])
 
         if constants.fwdInv:
@@ -96,7 +108,7 @@ class Teleop:
 
             ctrl = np.squeeze(np.matmul(foc_transform, ctrl))
 
-        tw = self.stick.getRawAxis(constants.rcwAxis)
+        tw = self.stick.getRawAxis(2)
         if constants.rcwInv:
             tw *= -1
 
