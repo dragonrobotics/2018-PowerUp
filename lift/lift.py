@@ -32,40 +32,39 @@ class ManualControlLift:
         self.lift_timer = wpilib.Timer()
         self.timer_started = False
 
+    def load_config_values(self):
+        prefs = wpilib.Preferences.getInstance()
+
+        phase = prefs.getBoolean("Lift: Invert Sensor Phase", True)
+        lower_limit = prefs.getInt("Lift: Lower Limit", None)
+        upper_limit = prefs.getInt("Lift: Upper Limit", None)
+
+        # Note: positive / forward power to the motors = lift moves down
+        # negative / reverse power to the motors = lift moves up
+        if lower_limit is not None:
+            self.lift_main.configForwardSoftLimitThreshold(lower_limit, 0)
+            self.lift_main.configForwardSoftLimitEnable(True, 0)
+        else:
+            self.lift_main.configForwardSoftLimitEnable(False, 0)
+
+        if upper_limit is not None:
+            self.lift_main.configReverseSoftLimitThreshold(upper_limit, 0)
+            self.lift_main.configReverseSoftLimitEnable(True, 0)
+        else:
+            self.lift_main.configReverseSoftLimitEnable(False, 0)
+
+        self.lift_main.setSensorPhase(phase)
+        self.lift_follower.setSensorPhase(phase)
+
     def update_smart_dashboard(self):
-        horiz = 1048
-        bt = -1876
-
-        pos = self.lift_main.getSelectedSensorPosition(0)
-
-        bottom = (bt - horiz) * (math.pi / (3*512))
-        cur = (pos - horiz) * (math.pi / (3*512))
-
-        height = (2 * 28) * (math.sin(cur) - math.sin(bottom))
-
         wpilib.SmartDashboard.putNumber(
-            "Lift Position",
-            pos
+            "Lift Main Position",
+            self.lift_main.getSelectedSensorPosition(0)
         )
 
         wpilib.SmartDashboard.putNumber(
-            "2nd Lift Position",
+            "Lift Follower Position",
             self.lift_follower.getSelectedSensorPosition(0)
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            "Bottom Angle",
-            math.degrees(bottom)
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            "Current Angle",
-            math.degrees(cur)
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            "Current Height",
-            height
         )
 
     def moveTimed(self, time, power):
