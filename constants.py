@@ -84,7 +84,7 @@ def load_control_config():
     )
 
     winch_slack = __load_preference(
-        'Control: Winch Slack Distance', backup=8585
+        'Control: Winch Slack Distance', backup=-8585
     )
 
     clawAxis = __load_preference('Control: Claw Control Axis', backup=5)
@@ -118,6 +118,8 @@ lift_ids = {
     'left': 31,
     'right': 42
 }
+lift_limit_channel = 0
+start_limit_channel = 1
 
 # Claw motor controller CAN ID(s).
 claw_id = 2

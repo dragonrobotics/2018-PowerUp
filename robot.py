@@ -32,7 +32,8 @@ class Robot(wpilib.IterativeRobot):
 
         self.lift = lift.ManualControlLift(
             constants.lift_ids['left'],
-            constants.lift_ids['right']
+            constants.lift_ids['right'],
+            constants.lift_limit_channel
         )
         self.winch = winch.Winch(
             constants.winch_id
@@ -62,12 +63,15 @@ class Robot(wpilib.IterativeRobot):
             "Throttle Pos", self.throttle.getRawAxis(constants.liftAxis)
         )
 
+        self.lift.checkLimitSwitch()
+
     def autonomousInit(self):
         self.drivetrain.load_config_values()
         self.lift.load_config_values()
 
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
         self.auto.periodic()
+        self.lift.checkLimitSwitch()
 
     def autonomousPeriodic(self):
         self.auto.update_smart_dashboard()
@@ -77,12 +81,16 @@ class Robot(wpilib.IterativeRobot):
         self.winch.update_smart_dashboard()
 
         self.auto.periodic()
+        self.lift.checkLimitSwitch()
 
     def teleopInit(self):
         self.teleop = Teleop(self)
+
         self.drivetrain.load_config_values()
         self.lift.load_config_values()
         constants.load_control_config()
+
+        self.lift.checkLimitSwitch()
 
     def teleopPeriodic(self):
         constants.load_control_config()
@@ -96,6 +104,7 @@ class Robot(wpilib.IterativeRobot):
         self.teleop.winch_control()
 
         self.claw.update()
+        self.lift.checkLimitSwitch()
 
         self.drivetrain.update_smart_dashboard()
         self.teleop.update_smart_dashboard()

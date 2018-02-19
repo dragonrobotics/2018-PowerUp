@@ -44,6 +44,11 @@ class Teleop:
     def lift_control(self):
         liftPct = self.throttle.getRawAxis(constants.liftAxis)
 
+        if self.throttle.getRawButton(5):
+            self.robot.lift.set_soft_limit_status(False)
+        else:
+            self.robot.lift.set_soft_limit_status(True)
+
         if constants.liftInv:
             liftPct *= -1
 
@@ -79,8 +84,8 @@ class Teleop:
     def winch_control(self):
         if self.throttle.getRawButton(1):
             if (
-                self.robot.winch.talon.getSelectedSensorPosition(0)
-                < constants.winch_slack
+                abs(self.robot.winch.talon.getSelectedSensorPosition(0))
+                < abs(constants.winch_slack)
             ):
                 self.robot.winch.forward()
             else:
