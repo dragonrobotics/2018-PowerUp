@@ -5,7 +5,6 @@ import wpilib
 import numpy as np
 import constants
 from robotpy_ext.control.button_debouncer import ButtonDebouncer
-from ctre.talonsrx import TalonSRX
 
 
 class Teleop:
@@ -60,6 +59,9 @@ class Teleop:
     def claw_control(self):
         clawPct = self.throttle.getRawAxis(constants.clawAxis)
         liftPct = self.throttle.getRawAxis(constants.liftAxis)
+
+        if constants.clawInv:
+            clawPct *= -1
 
         if abs(clawPct) < constants.claw_deadband:
             clawPct = 0

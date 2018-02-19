@@ -58,7 +58,7 @@ def load_control_config():
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
     global turn_sensitivity, liftAxis, liftInv, lift_deadband, lift_coeff
     global winch_slack, close_claw_on_lift_motion, claw_deadband, claw_coeff
-    global clawAxis
+    global clawAxis, clawInv
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)

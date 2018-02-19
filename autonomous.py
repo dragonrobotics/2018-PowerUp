@@ -28,7 +28,6 @@ import math
 import wpilib
 import numpy as np
 from collections import deque
-from ctre.talonsrx import TalonSRX
 
 start_pos_left = np.array((21.25, 82.5))
 start_pos_middle = np.array((21.25, 197))
