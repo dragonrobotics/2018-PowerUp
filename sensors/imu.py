@@ -50,7 +50,7 @@ class IMU:
             abs_hdg += (2*math.pi)
 
         if self.prefs.getBoolean('Reverse Heading Direction', False):
-            abs_hdg *= -1
+            abs_hdg = (2*math.pi) - abs_hdg
 
         return abs_hdg
 
