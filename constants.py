@@ -10,10 +10,13 @@ strAxis = 0  #: Left/Right axis
 rcwAxis = 2  #: Rotation axis
 
 liftAxis = 2  #: Lift control axis on throttle
+clawAxis = 5  #: Claw control axis on throttle
 
 fwdInv = True  #: Fwd/Bwd axis inverted
 strInv = True  #: L/R axis inverted
 rcwInv = True  #: Rot axis inverted
+liftInv = False  #: Lift axis inverted
+clawInv = False  #: Claw axis inverted
 
 teleop_speed = 370
 turn_sensitivity = 0.25
@@ -22,6 +25,10 @@ lift_deadband = 0.25  # deadband
 lift_coeff = 0.20
 
 winch_slack = 8585
+
+claw_deadband = 0.1
+claw_coeff = 0.35
+close_claw_on_lift_motion = False
 
 
 # Wraps the Preferences API to provide an alternative to all of the
@@ -50,6 +57,8 @@ def load_control_config():
     """
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
     global turn_sensitivity, liftAxis, liftInv, lift_deadband, lift_coeff
+    global winch_slack, close_claw_on_lift_motion, claw_deadband, claw_coeff
+    global clawAxis
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
@@ -72,6 +81,25 @@ def load_control_config():
     teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
     turn_sensitivity = __load_preference(
         'Control: Turn Sensitivity', backup=0.25
+    )
+
+    winch_slack = __load_preference(
+        'Control: Winch Slack Distance', backup=8585
+    )
+
+    clawAxis = __load_preference('Control: Claw Control Axis', backup=5)
+    clawInv = __load_preference('Control: Claw Control Inverted', backup=False)
+
+    claw_deadband = __load_preference(
+        'Control: Claw Control Deadband', backup=0.1
+    )
+
+    claw_coeff = __load_preference(
+        'Control: Claw Control Coefficient', backup=0.35
+    )
+
+    close_claw_on_lift_motion = __load_preference(
+        'Control: Close Claw When Moving Lift', backup=False
     )
 
 

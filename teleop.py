@@ -58,12 +58,21 @@ class Teleop:
         self.robot.lift.setLiftPower(liftPct)
 
     def claw_control(self):
-        clawPct = self.throttle.getRawAxis(5)
-        clawPct *= 0.35
+        clawPct = self.throttle.getRawAxis(constants.clawAxis)
+        liftPct = self.throttle.getRawAxis(constants.liftAxis)
 
-        self.robot.claw.talon.set(
-            TalonSRX.ControlMode.PercentOutput, clawPct
-        )
+        if abs(clawPct) < constants.claw_deadband:
+            clawPct = 0
+
+        if (
+            abs(liftPct) > constants.lift_deadband
+            and constants.close_claw_on_lift_motion
+        ):
+            # lift is active, close the claw
+            self.robot.claw.close()
+        else:
+            clawPct *= constants.claw_coeff
+            self.robot.claw.set_power(clawPct)
 
     def winch_control(self):
         if self.throttle.getRawButton(1):
