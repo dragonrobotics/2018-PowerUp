@@ -58,6 +58,10 @@ class Claw:
         self.closeAdjustTimer = wpilib.Timer()
         self.movementTimer = wpilib.Timer()
 
+    def set_power(self, power):
+        self.state = 'manual_ctrl'
+        self.talon.set(TalonSRX.ControlMode.PercentOutput, power)
+
     def close(self):
         """
         Close the claw.

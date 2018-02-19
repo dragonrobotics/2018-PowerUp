@@ -95,6 +95,8 @@ class Robot(wpilib.IterativeRobot):
         self.teleop.claw_control()
         self.teleop.winch_control()
 
+        self.claw.update()
+
         self.drivetrain.update_smart_dashboard()
         self.teleop.update_smart_dashboard()
         self.imu.update_smart_dashboard()

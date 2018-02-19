@@ -179,31 +179,24 @@ class Autonomous:
             init_time = self.hack_timer.get()
             if init_time < 0.5:
                 self.robot.lift.setLiftPower(-0.6)
-                self.robot.claw.talon.set(
-                    TalonSRX.ControlMode.PercentOutput, 1
-                )
+                self.robot.claw.set_power(1)
                 self.robot.drivetrain.set_all_module_speeds(150, True)
             elif init_time < 1:
                 self.robot.lift.setLiftPower(0)
-                self.robot.claw.talon.set(
-                    TalonSRX.ControlMode.PercentOutput, 0
-                )
+                self.robot.claw.set_power(0)
                 self.robot.drivetrain.set_all_module_speeds(200, True)
             elif init_time < 1.5:
                 self.robot.drivetrain.set_all_module_speeds(-200, True)
             elif self.hack_timer.get() > 1.5:
                 self.robot.drivetrain.set_all_module_speeds(0, True)
-                self.robot.claw.talon.set(
-                    TalonSRX.ControlMode.PercentOutput, 0
-                )
+                self.robot.claw.set_power(0)
 
                 self.hack_timer_started = False
 
                 # Get distance driven forwards during the unfold maneuver
-                # By default we drive in the -X direction apparently?
                 dist = np.mean(self.robot.drivetrain.get_module_distances())
                 dist *= (4 * math.pi) / (80 * 6.67)
-                self.current_pos[0] -= dist
+                self.current_pos[0] += dist
 
                 self.state = 'init-turn'
 
@@ -357,21 +350,7 @@ class Autonomous:
         Open the claw and drop the cube.
         """
         self.robot.drivetrain.set_all_module_speeds(0, True)
-
-        if not self.hack_timer_started:
-            self.hack_timer.reset()
-            self.hack_timer.start()
-            self.hack_timer_started = True
-        else:
-            t = self.hack_timer.get()
-            if t < 0.5:
-                self.robot.claw.talon.set(
-                    TalonSRX.ControlMode.PercentOutput, -1
-                )
-            else:
-                self.robot.claw.talon.set(
-                    TalonSRX.ControlMode.PercentOutput, 0
-                )
+        self.robot.claw.open()
 
     #: Maps state names to functions.
     state_table = {
