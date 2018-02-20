@@ -337,6 +337,7 @@ class Autonomous:
         """
 
         avg_dist = np.mean(self.robot.drivetrain.get_module_distances())
+        avg_dist *= (4 * math.pi) / (80 * 6.67)
 
         self.robot.drivetrain.set_all_module_angles(0)
         self.robot.drivetrain.set_all_module_speeds(self.drive_speed, True)
