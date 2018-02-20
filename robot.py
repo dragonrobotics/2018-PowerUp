@@ -33,8 +33,10 @@ class Robot(wpilib.IterativeRobot):
         self.lift = lift.ManualControlLift(
             constants.lift_ids['left'],
             constants.lift_ids['right'],
-            constants.lift_limit_channel
+            constants.lift_limit_channel,
+            constants.start_limit_channel
         )
+        
         self.winch = winch.Winch(
             constants.winch_id
         )
