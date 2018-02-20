@@ -36,7 +36,7 @@ class Robot(wpilib.IterativeRobot):
             constants.lift_limit_channel,
             constants.start_limit_channel
         )
-        
+
         self.winch = winch.Winch(
             constants.winch_id
         )

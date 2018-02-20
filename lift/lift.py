@@ -48,7 +48,9 @@ class ManualControlLift:
         # Note: positive / forward power to the motors = lift moves down
         # negative / reverse power to the motors = lift moves up
         if self.upper_limit is not None:
-            self.lift_main.configReverseSoftLimitThreshold(int(self.upper_limit), 0)
+            self.lift_main.configReverseSoftLimitThreshold(
+                int(self.upper_limit), 0
+            )
             self.lift_main.configReverseSoftLimitEnable(True, 0)
         else:
             self.lift_main.configReverseSoftLimitEnable(False, 0)
