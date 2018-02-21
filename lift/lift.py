@@ -18,13 +18,13 @@ class ManualControlLift:
             TalonSRX.FeedbackDevice.PulseWidthEncodedPosition,
             0, 0
         )
-        self.lift_main.setPulseWidthPosition(0, 0)
+        #self.lift_main.setPulseWidthPosition(0, 0)
 
         self.lift_follower.configSelectedFeedbackSensor(
             TalonSRX.FeedbackDevice.PulseWidthEncodedPosition,
             0, 0
         )
-        self.lift_follower.setPulseWidthPosition(0, 0)
+        #self.lift_follower.setPulseWidthPosition(0, 0)
 
         self.lift_follower.set(
             TalonSRX.ControlMode.Follower,
@@ -45,15 +45,18 @@ class ManualControlLift:
         phase = prefs.getBoolean("Lift: Invert Sensor Phase", True)
         self.upper_limit = prefs.getInt("Lift: Upper Limit", None)
 
-        # Note: positive / forward power to the motors = lift moves down
-        # negative / reverse power to the motors = lift moves up
-        if self.upper_limit is not None:
-            self.lift_main.configReverseSoftLimitThreshold(
-                int(self.upper_limit), 0
-            )
-            self.lift_main.configReverseSoftLimitEnable(True, 0)
-        else:
-            self.lift_main.configReverseSoftLimitEnable(False, 0)
+        self.limits_enabled = prefs.getBoolean("Lift: Limits Enabled", False)
+
+        if self.limits_enabled:
+            # Note: positive / forward power to the motors = lift moves down
+            # negative / reverse power to the motors = lift moves up
+            if self.upper_limit is not None:
+                self.lift_main.configReverseSoftLimitThreshold(
+                    int(self.upper_limit), 0
+                )
+                self.lift_main.configReverseSoftLimitEnable(True, 0)
+            else:
+                self.lift_main.configReverseSoftLimitEnable(False, 0)
 
         self.lift_main.setSensorPhase(phase)
         self.lift_follower.setSensorPhase(phase)
@@ -81,6 +84,11 @@ class ManualControlLift:
         )
 
         wpilib.SmartDashboard.putBoolean(
+            "Lift Found Zero",
+            self.lift_zero_found
+        )
+
+        wpilib.SmartDashboard.putBoolean(
             "Lift Start Position Switch",
             not self.start_limit_switch.get()
         )
@@ -96,7 +104,10 @@ class ManualControlLift:
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
 
     def setLiftPower(self, power):
-        self.lift_main.set(TalonSRX.ControlMode.PercentOutput, power)
+        if power > 0 and not self.bottom_limit_switch.get():
+            self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
+        else:
+            self.lift_main.set(TalonSRX.ControlMode.PercentOutput, power)
 
     def checkLimitSwitch(self):
         self.set_soft_limit_status(self.lift_zero_found)
@@ -110,11 +121,8 @@ class ManualControlLift:
             self.lift_main.setQuadraturePosition(0, 0)
             self.lift_follower.setQuadraturePosition(0, 0)
 
-            if self.lift_main.getMotorOutputPercent() < 0:
-                self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
-
     def driveToStartingPosition(self):
-        if not self.start_limit_switch.get():
-            self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0.25)
+        if self.start_limit_switch.get():
+            self.lift_main.set(TalonSRX.ControlMode.PercentOutput, -0.25)
         else:
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
