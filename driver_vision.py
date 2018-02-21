@@ -5,7 +5,7 @@ import time
 # tuples are (camera_name, camera_device_id)
 cameras = [
     ('Camera 1', 0),
-    # ('Camera 2', 1),
+    ('Camera 2', 1),
 ]
 
 
@@ -32,10 +32,10 @@ def main():
         # camera_chooser.addDefault(name, cam_idx)
 
     cam_server = cs_instance.addServer(name='camera_server')
-    current_selected = int(table.getNumber('Selected Camera', 0))
+    current_selected = int(table.getNumber('Selected Camera', 1))
 
     if current_selected >= len(camera_objects):
-        current_selected = 0
+        current_selected = 1
 
     cam_server.setSource(camera_objects[current_selected])
 

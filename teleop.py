@@ -38,7 +38,7 @@ class Teleop:
                 self.foc_enabled = not self.foc_enabled
 
         if self.switch_camera_button.get():
-            current_camera = (self.prefs.getInt('Selected Camera', 0) + 1) % 1
+            current_camera = (self.prefs.getInt('Selected Camera', 0) + 1) % 2
             self.prefs.putInt('Selected Camera', current_camera)
 
     def lift_control(self):
@@ -90,7 +90,7 @@ class Teleop:
                 self.robot.winch.forward()
             else:
                 self.robot.winch.forward()
-                self.robot.lift.setLiftPower(0.35)
+                self.robot.lift.setLiftPower(constants.sync_power)
         elif self.throttle.getRawButton(3):
             self.robot.winch.forward()
         elif self.throttle.getRawButton(2):
@@ -113,6 +113,12 @@ class Teleop:
 
         if constants.strInv:
             ctrl[1] *= -1
+
+        if abs(ctrl[0]) < 0.1:
+            ctrl[0] = 0
+
+        if abs(ctrl[1]) < 0.1:
+            ctrl[1] = 0
 
         linear_control_active = True
         if abs(np.sqrt(np.sum(ctrl**2))) < 0.1:
