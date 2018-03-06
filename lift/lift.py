@@ -18,13 +18,13 @@ class ManualControlLift:
             TalonSRX.FeedbackDevice.PulseWidthEncodedPosition,
             0, 0
         )
-        #self.lift_main.setPulseWidthPosition(0, 0)
+        # self.lift_main.setPulseWidthPosition(0, 0)
 
         self.lift_follower.configSelectedFeedbackSensor(
             TalonSRX.FeedbackDevice.PulseWidthEncodedPosition,
             0, 0
         )
-        #self.lift_follower.setPulseWidthPosition(0, 0)
+        # self.lift_follower.setPulseWidthPosition(0, 0)
 
         self.lift_follower.set(
             TalonSRX.ControlMode.Follower,
