@@ -5,6 +5,8 @@ import numpy as np
 import wpilib
 import math
 
+from .constants import swerve_defaults
+
 ControlMode = TalonSRX.ControlMode
 FeedbackDevice = TalonSRX.FeedbackDevice
 
@@ -87,32 +89,31 @@ class SwerveModule(object):
 
         self.drive_talon.setSensorPhase(preferences.getBoolean(
             self.name+'-Sensor Reverse',
-            False
+            swerve_defaults[self.name]['Sensor Reverse']
         ))
 
         self.steer_talon.setSensorPhase(preferences.getBoolean(
             self.name+'-Steer Sensor Reverse',
-            False
+            swerve_defaults[self.name]['Steer Sensor Reverse']
         ))
 
-        steer_sensor_phase = preferences.getBoolean(
-            self.name+'-Steer Sensor Reverse',
-            False
+        self.steer_offset = preferences.getFloat(
+            self.name+'-offset',
+            swerve_defaults[self.name]['Offset']
         )
 
-        self.steer_talon.setSensorPhase(steer_sensor_phase)
-
-        self.steer_offset = preferences.getFloat(self.name+'-offset', 0)
         self.steer_min = 0
         self.steer_max = 1024
         self.steer_range = 1024
 
         self.drive_reversed = preferences.getBoolean(
-            self.name+'-reversed', False
+            self.name+'-reversed',
+            swerve_defaults[self.name]['Reversed']
         )
 
         self.steer_reversed = preferences.getBoolean(
-            self.name+'-steer-reversed', False
+            self.name+'-steer-reversed',
+            swerve_defaults[self.name]['Steer Reversed']
         )
 
         self.steer_talon.setInverted(self.steer_reversed)
