@@ -57,6 +57,17 @@ class SwerveDrive(object):
         self.sd_update_timer = wpilib.Timer()
         self.sd_update_timer.start()
 
+        # NOTE: This flag currently only has any effect when calling
+        # the :drive() method (i.e. in Teleoperated mode).
+        #
+        # The rationale for this is that there is no point in making the
+        # massive (and potentially breaking) changes to the methods required to
+        # support this flag for auto code, because if the velocity closed-loop
+        # for the swerve modules does not work, then there must be larger
+        # problems with the swerve drive sensors, and therefore practically all
+        # autonomous code would fail to function properly anyways.
+        self.fallback_to_pct_out = False
+
     def drive(self, forward, strafe, rotate_cw, max_wheel_speed=370):
         """
         Compute and apply module angles and speeds to achieve a given
@@ -89,7 +100,13 @@ class SwerveDrive(object):
 
         # back-right, back-left, front-right, front-left?
         for module, angle, speed in zip(self.modules, angles, speeds):
-            module.apply_control_values(angle, speed * max_wheel_speed, True)
+            if self.fallback_to_pct_out:
+                # use percent output control mode
+                module.set_steer_angle(angle)
+                module.set_drive_percent_out(speed)
+            else:
+                # use velocity closed-loop
+                module.apply_control_values(angle, speed * max_wheel_speed, True)
 
     def turn_to_angle(self, imu, target_angle):
         prefs = wpilib.Preferences.getInstance()
@@ -193,6 +210,13 @@ class SwerveDrive(object):
         """
         Load configuration values for all modules within this swerve drive.
         """
+        preferences = wpilib.Preferences.getInstance()
+
+        self.fallback_to_pct_out = preferences.getBoolean(
+            "Swerve: Disable Velocity Control",
+            False
+        )
+
         for module in self.modules:
             module.load_config_values()
 

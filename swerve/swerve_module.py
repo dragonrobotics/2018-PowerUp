@@ -225,6 +225,15 @@ class SwerveModule(object):
         else:
             self.drive_talon.set(ControlMode.Velocity, speed * self.max_speed)
 
+    def set_drive_percent_out(self, pct_out):
+        if self.drive_reversed:
+            pct_out *= -1
+
+        if self.drive_temp_flipped:
+            pct_out *= -1
+
+        self.drive_talon.set(ControlMode.PercentOutput, pct_out)
+
     def set_drive_distance(self, ticks):
         if self.drive_reversed:
             ticks *= -1
@@ -290,6 +299,16 @@ class SwerveModule(object):
             self.cur_drive_spd
         )
 
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Steer Error',
+            self.steer_talon.getClosedLoopError(0)
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Error',
+            self.drive_talon.getClosedLoopError(0)
+        )
+
         if _enable_debug_dashboard_values:
             wpilib.SmartDashboard.putNumber(
                 self.name+' Position',
@@ -306,14 +325,6 @@ class SwerveModule(object):
                 self.name+' Target',
                 self.raw_target
             )
-
-            wpilib.SmartDashboard.putNumber(
-                self.name+' Steer Error',
-                self.steer_talon.getClosedLoopError(0))
-
-            wpilib.SmartDashboard.putNumber(
-                self.name+' Drive Error',
-                self.drive_talon.getClosedLoopError(0))
 
             wpilib.SmartDashboard.putNumber(
                 self.name+' Drive Velocity (Max)',
