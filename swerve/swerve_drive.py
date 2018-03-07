@@ -106,7 +106,9 @@ class SwerveDrive(object):
                 module.set_drive_percent_out(speed)
             else:
                 # use velocity closed-loop
-                module.apply_control_values(angle, speed * max_wheel_speed, True)
+                module.apply_control_values(
+                    angle, speed * max_wheel_speed, True
+                )
 
     def turn_to_angle(self, imu, target_angle):
         prefs = wpilib.Preferences.getInstance()
