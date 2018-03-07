@@ -16,7 +16,9 @@ _apply_range_hack = False
 _acceptable_steer_err_degrees = 1  # degrees
 _acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 
+# Set to true to enable more SmartDashboard datalogging
 _enable_debug_dashboard_values = False
+
 
 class SwerveModule(object):
     def __init__(self, name, steer_id, drive_id):
