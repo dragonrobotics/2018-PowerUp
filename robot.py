@@ -80,7 +80,7 @@ class Robot(wpilib.IterativeRobot):
         self.lift.checkLimitSwitch()
 
     def autonomousPeriodic(self):
-        if self.sd_timer.hasPeriodPassed(0.5):
+        if self.sd_update_timer.hasPeriodPassed(0.5):
             self.auto.update_smart_dashboard()
             self.imu.update_smart_dashboard()
             self.drivetrain.update_smart_dashboard()
@@ -109,7 +109,7 @@ class Robot(wpilib.IterativeRobot):
         self.claw.update()
         self.lift.checkLimitSwitch()
 
-        if self.sd_timer.hasPeriodPassed(0.5):
+        if self.sd_update_timer.hasPeriodPassed(0.5):
             constants.load_control_config()
             self.drivetrain.load_config_values()
             self.lift.load_config_values()
