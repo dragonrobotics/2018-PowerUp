@@ -16,6 +16,7 @@ _apply_range_hack = False
 _acceptable_steer_err_degrees = 1  # degrees
 _acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 
+_enable_debug_dashboard_values = False
 
 class SwerveModule(object):
     def __init__(self, name, steer_id, drive_id):
@@ -259,42 +260,6 @@ class SwerveModule(object):
         As of right now, this displays the current raw absolute encoder reading
         from the steer Talon, and the current target steer position.
         """
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Position',
-            (self.steer_talon.getAnalogIn() - self.steer_offset)
-            * (180 / 512)
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Raw Position',
-            self.steer_talon.getAnalogIn()
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' CL Position',
-            self.steer_talon.getSelectedSensorPosition(0)
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' ADC', self.steer_talon.getAnalogInRaw())
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Target',
-            self.raw_target
-        )
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Steer Error',
-            self.steer_talon.getClosedLoopError(0))
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Drive Error',
-            self.drive_talon.getClosedLoopError(0))
-
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Drive Ticks',
-            self.drive_talon.getQuadraturePosition())
-
         self.raw_drive_speeds.append(self.drive_talon.getQuadratureVelocity())
         if len(self.raw_drive_speeds) > 50:
             self.raw_drive_speeds = self.raw_drive_speeds[-50:]
@@ -305,20 +270,60 @@ class SwerveModule(object):
             self.max_observed_speed = self.cur_drive_spd
 
         wpilib.SmartDashboard.putNumber(
+            self.name+' CL Position',
+            self.steer_talon.getSelectedSensorPosition(0)
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' ADC', self.steer_talon.getAnalogInRaw()
+        )
+
+        wpilib.SmartDashboard.putNumber(
+            self.name+' Drive Ticks',
+            self.drive_talon.getQuadraturePosition()
+        )
+
+        wpilib.SmartDashboard.putNumber(
             self.name+' Drive Velocity',
             self.cur_drive_spd
         )
 
-        wpilib.SmartDashboard.putNumber(
-            self.name+' Drive Velocity (Max)',
-            self.max_observed_speed
-        )
+        if _enable_debug_dashboard_values:
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Position',
+                (self.steer_talon.getAnalogIn() - self.steer_offset)
+                * (180 / 512)
+            )
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Raw Position',
+                self.steer_talon.getAnalogIn()
+            )
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Target',
+                self.raw_target
+            )
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Steer Error',
+                self.steer_talon.getClosedLoopError(0))
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Drive Error',
+                self.drive_talon.getClosedLoopError(0))
+
+            wpilib.SmartDashboard.putNumber(
+                self.name+' Drive Velocity (Max)',
+                self.max_observed_speed
+            )
 
         if wpilib.RobotBase.isReal():
-            wpilib.SmartDashboard.putNumber(
-                self.name+' Drive Percent Output',
-                self.drive_talon.getMotorOutputPercent()
-            )
+            if _enable_debug_dashboard_values:
+                wpilib.SmartDashboard.putNumber(
+                    self.name+' Drive Percent Output',
+                    self.drive_talon.getMotorOutputPercent()
+                )
 
             wpilib.SmartDashboard.putNumber(
                 self.name+' Drive Current',
