@@ -49,6 +49,10 @@ class Robot(wpilib.IterativeRobot):
 
         self.imu = IMU(wpilib.SPI.Port.kMXP)
 
+        self.sd_update_timer = wpilib.Timer()
+        self.sd_update_timer.reset()
+        self.sd_update_timer.start()
+
     def disabledInit(self):
         pass
 
@@ -76,11 +80,12 @@ class Robot(wpilib.IterativeRobot):
         self.lift.checkLimitSwitch()
 
     def autonomousPeriodic(self):
-        self.auto.update_smart_dashboard()
-        self.imu.update_smart_dashboard()
-        self.drivetrain.update_smart_dashboard()
-        self.lift.update_smart_dashboard()
-        self.winch.update_smart_dashboard()
+        if self.sd_timer.hasPeriodPassed(0.5):
+            self.auto.update_smart_dashboard()
+            self.imu.update_smart_dashboard()
+            self.drivetrain.update_smart_dashboard()
+            self.lift.update_smart_dashboard()
+            self.winch.update_smart_dashboard()
 
         self.auto.periodic()
         self.lift.checkLimitSwitch()
@@ -95,10 +100,6 @@ class Robot(wpilib.IterativeRobot):
         self.lift.checkLimitSwitch()
 
     def teleopPeriodic(self):
-        constants.load_control_config()
-        self.drivetrain.load_config_values()
-        self.lift.load_config_values()
-
         self.teleop.drive()
         self.teleop.buttons()
         self.teleop.lift_control()
@@ -108,11 +109,16 @@ class Robot(wpilib.IterativeRobot):
         self.claw.update()
         self.lift.checkLimitSwitch()
 
-        self.drivetrain.update_smart_dashboard()
-        self.teleop.update_smart_dashboard()
-        self.imu.update_smart_dashboard()
-        self.lift.update_smart_dashboard()
-        self.winch.update_smart_dashboard()
+        if self.sd_timer.hasPeriodPassed(0.5):
+            constants.load_control_config()
+            self.drivetrain.load_config_values()
+            self.lift.load_config_values()
+
+            self.drivetrain.update_smart_dashboard()
+            self.teleop.update_smart_dashboard()
+            self.imu.update_smart_dashboard()
+            self.lift.update_smart_dashboard()
+            self.winch.update_smart_dashboard()
 
 
 if __name__ == "__main__":
