@@ -1,6 +1,7 @@
 robotpy-hal-sim
 robotpy-wpilib-utilities
 robotpy-ctre
+robotpy-pathfinder
 pynetworktables
 wpilib
 pyfrc
