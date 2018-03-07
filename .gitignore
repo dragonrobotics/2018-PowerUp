@@ -115,3 +115,5 @@ docs/doctrees
 
 # deploy configs
 .deploy_cfg
+
+trajectory.pickle
