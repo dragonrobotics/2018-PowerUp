@@ -2,6 +2,7 @@ import os.path
 import pickle
 import sys
 import wpilib
+import numpy as np
 from numpy import pi
 import pathfinder as pf
 from pathfinder.followers import EncoderFollower
@@ -10,7 +11,10 @@ import constants
 trajectory_file = os.path.join(os.path.dirname(__file__), 'trajectory.pickle')
 trajectories = {
     'left': None,
-    'right': None
+    'right': None,
+    'divert-left': None,
+    'divert-right': None,
+    'straght-forward': None,
 }
 
 _trajectory_dt = 0.05  # time in seconds between control updates
@@ -20,10 +24,42 @@ if wpilib.RobotBase.isSimulation():
     # waypoint specification:
     # relative x, y coordinates in meters; exit angle in radians
 
+    # distance to switch fence = 140in
+    start_pos_left = np.array((21.25, 82.5))
+    start_pos_middle = np.array((21.25, 197))
+    start_pos_right = np.array((21.25, 263.5))
+
+    left_switch = np.array((136, 164-54))
+    right_switch = np.array((136, 164+54))
+
+    staging_left = np.array((136, 48.5))
+    staging_mid = np.array((60, 164))
+    staging_right = np.array((136, 279.5))
+
+    align_pt_left = np.array((120, 164-54))
+    align_pt_right = np.array((120, 164+54))
+
+    left_leg1 = (staging_mid - start_pos_middle) * 0.0254
+    left_leg2 = (align_pt_left - start_pos_middle) * 0.0254
+    left_leg3 = (left_switch - start_pos_middle) * 0.0254
+
+    right_leg1 = (align_pt_right - start_pos_middle) * 0.0254
+    right_leg2 = (right_switch - start_pos_middle) * 0.0254
+
+    ldiv_leg1 = (np.array((36, 48.5)) - start_pos_left) * 0.0254
+    ldiv_leg2 = (staging_left - start_pos_left) * 0.0254
+
+    rdiv_leg1 = (np.array((36, 279.5)) - start_pos_right) * 0.0254
+    rdiv_leg2 = (staging_right - start_pos_right) * 0.0254
+
+    straight_fwd1 = np.array((36, 0)) * 0.0254
+    straight_fwd2 = np.array((132, 0)) * 0.0254
+
     _, trajectories['left'] = pf.generate(
         [
-            pf.Waypoint(1, -1, 0),
-            pf.Waypoint(4, -1, 0),
+            pf.Waypoint(left_leg1[0], left_leg1[1], 0),
+            pf.Waypoint(left_leg2[0], left_leg2[1], 0),
+            pf.Waypoint(left_leg3[0], left_leg3[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -32,8 +68,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['divert-left'] = pf.generate(
         [
-            pf.Waypoint(0.5, -2.5, 0),
-            pf.Waypoint(4.5, -2.5, 0),
+            pf.Waypoint(ldiv_leg1[0], ldiv_leg1[1], 0),
+            pf.Waypoint(ldiv_leg2[0], ldiv_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -42,8 +78,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['right'] = pf.generate(
         [
-            pf.Waypoint(1, 1, 0),
-            pf.Waypoint(4, 1, 0),
+            pf.Waypoint(right_leg1[0], right_leg1[1], 0),
+            pf.Waypoint(right_leg2[0], right_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -52,8 +88,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['divert-right'] = pf.generate(
         [
-            pf.Waypoint(0.5, 2.5, 0),
-            pf.Waypoint(4.5, 2.5, 0),
+            pf.Waypoint(rdiv_leg1[0], rdiv_leg1[1], 0),
+            pf.Waypoint(rdiv_leg2[0], rdiv_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -62,8 +98,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['straight-forward'] = pf.generate(
         [
-            pf.Waypoint(0.5, 0, 0),
-            pf.Waypoint(4.5, 0, 0),
+            pf.Waypoint(straight_fwd1[0], straight_fwd1[1], 0),
+            pf.Waypoint(straight_fwd2[0], straight_fwd2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -88,6 +124,12 @@ class Autonomous:
         self.timer = wpilib.Timer()
         self.timer.reset()
         self.timer.start()
+
+        self.start_timer = wpilib.Timer()
+        self.start_timer.reset()
+        self.start_timer.start()
+        self.startup_routine = True
+        self.start_timer_started = False
 
         self.lift_timer = wpilib.Timer()
         self.lift_timer_started = False
@@ -181,7 +223,27 @@ class Autonomous:
 
     def periodic(self):
         # follow trajectory if need be
-        if (
+        if self.startup_routine:
+            if not self.start_timer_started:
+                self.start_timer.reset()
+                self.start_timer.start()
+                self.start_timer_started = True
+            else:
+                #
+                init_time = self.start_timer.get()
+                if init_time < 0.5:
+                    self.robot.lift.setLiftPower(-0.6)
+                    self.robot.drivetrain.set_all_module_speeds(150, True)
+                elif init_time < 1:
+                    self.robot.lift.setLiftPower(0)
+                    self.robot.drivetrain.set_all_module_speeds(200, True)
+                elif init_time < 1.5:
+                    self.robot.drivetrain.set_all_module_speeds(-200, True)
+                elif init_time > 1.5:
+                    self.robot.drivetrain.set_all_module_speeds(0, True)
+                    self.start_timer_started = False
+                    self.startup_routine = False
+        elif (
             not self.traj_finished
             and self.timer.hasPeriodPassed(_trajectory_dt)
         ):

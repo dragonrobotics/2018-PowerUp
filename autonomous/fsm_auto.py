@@ -37,7 +37,7 @@ left_switch = np.array((168, 164-54))
 right_switch = np.array((168, 164+54))
 
 staging_left = np.array((120, 48.5))
-staging_mid = np.array((120, 164+54))
+staging_mid = np.array((120, 164))
 staging_right = np.array((120, 279.5))
 
 align_pt_left = np.array((168, 48.5))

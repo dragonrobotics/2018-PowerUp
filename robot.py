@@ -76,7 +76,7 @@ class Robot(wpilib.IterativeRobot):
         self.lift.load_config_values()
 
         self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
-        self.auto.periodic()
+        #self.auto.periodic()
         self.lift.checkLimitSwitch()
 
     def autonomousPeriodic(self):
@@ -87,7 +87,7 @@ class Robot(wpilib.IterativeRobot):
             self.lift.update_smart_dashboard()
             self.winch.update_smart_dashboard()
 
-        self.auto.periodic()
+        #self.auto.periodic()
         self.lift.checkLimitSwitch()
 
     def teleopInit(self):
