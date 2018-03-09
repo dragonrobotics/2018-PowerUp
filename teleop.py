@@ -16,6 +16,8 @@ class Teleop:
         self.stick = wpilib.Joystick(0)
         self.throttle = wpilib.Joystick(1)
 
+        self.claw_const_pressure_active = False
+
         self.prefs = wpilib.Preferences.getInstance()
 
         self.toggle_foc_button = ButtonDebouncer(self.stick, 2)
@@ -69,17 +71,18 @@ class Teleop:
             clawPct *= -1
 
         if abs(clawPct) < constants.claw_deadband:
-            clawPct = 0
-
-        if (
-            abs(liftPct) > constants.lift_deadband
-            and constants.close_claw_on_lift_motion
-        ):
-            # lift is active, close the claw
-            self.robot.claw.close()
+            if self.claw_const_pressure_active:
+                clawPct = -0.1
+            else:
+                clawPct = 0
         else:
-            clawPct *= constants.claw_coeff
-            self.robot.claw.set_power(clawPct)
+            if clawPct > constants.claw_deadband:
+                self.claw_const_pressure_active = False
+            elif clawPct < -constants.claw_deadband:
+                self.claw_const_pressure_active = True
+
+        clawPct *= constants.claw_coeff
+        self.robot.claw.set_power(clawPct)
 
     def winch_control(self):
         if self.throttle.getRawButton(1):
