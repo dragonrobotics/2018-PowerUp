@@ -65,7 +65,6 @@ class Teleop:
 
     def claw_control(self):
         clawPct = self.throttle.getRawAxis(constants.clawAxis)
-        liftPct = self.throttle.getRawAxis(constants.liftAxis)
 
         if constants.clawInv:
             clawPct *= -1

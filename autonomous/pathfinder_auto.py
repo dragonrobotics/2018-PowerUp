@@ -249,7 +249,6 @@ class Autonomous:
                 else:
                     self.robot.drivetrain.set_all_module_angles(0)
                     self.robot.drivetrain.set_all_module_speeds(0, True)
-                    #self.start_timer_started = False
                     self.startup_routine = False
         elif (
             not self.traj_finished
