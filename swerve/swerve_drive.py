@@ -176,6 +176,10 @@ class SwerveDrive(object):
         for module in self.modules:
             module.set_drive_speed(speed, direct)
 
+    def immediate_stop(self):
+        for module in self.modules:
+            module.set_drive_percent_out(0)
+
     def set_all_module_dist_ticks(self, dist_ticks):
         for module in self.modules:
             module.set_drive_distance(dist_ticks)

@@ -118,6 +118,9 @@ class Autonomous:
     # maximum auto drive speed, in m/s
     # (we convert 200 ticks/100ms to inches per second to meters per second)
     def __init__(self, robot, robot_position):
+        if robot_position is None:
+            robot_position = '[was None]'
+
         self.robot = robot
         self.position = robot_position
 
@@ -151,9 +154,6 @@ class Autonomous:
                 print("[auto] Got field string in {:.3f} seconds: {}".format(
                     self.timer.get(), self.field_string
                 ))
-
-            if robot_position is None:
-                robot_position = '[was None]'
 
             if robot_position.lower() == 'middle':
                 if len(self.field_string) == 0:
@@ -228,56 +228,66 @@ class Autonomous:
 
     def periodic(self):
         # follow trajectory if need be
-        if self.startup_routine:
-            if not self.start_timer_started:
-                self.start_timer.reset()
-                self.start_timer.start()
-                self.start_timer_started = True
-            else:
-                #
-                init_time = self.start_timer.get()
-                if init_time < 0.75:
-                    self.robot.lift.setLiftPower(-0.6)
-                    self.robot.drivetrain.set_all_module_angles(0)
-                elif init_time < 1:
-                    self.robot.lift.setLiftPower(0)
-                    self.robot.drivetrain.set_all_module_angles(0)
-                    self.robot.drivetrain.set_all_module_speeds(250, True)
-                elif init_time < 1.5:
-                    self.robot.drivetrain.set_all_module_angles(0)
-                    self.robot.drivetrain.set_all_module_speeds(-250, True)
+        try:
+            if self.startup_routine:
+                if not self.start_timer_started:
+                    self.start_timer.reset()
+                    self.start_timer.start()
+                    self.start_timer_started = True
                 else:
-                    self.robot.drivetrain.set_all_module_angles(0)
-                    self.robot.drivetrain.set_all_module_speeds(0, True)
-                    self.startup_routine = False
-        elif (
-            not self.traj_finished
-            and self.timer.hasPeriodPassed(_trajectory_dt)
-        ):
-            self.traj_finished = True
-            for mod, follower in zip(self.robot.drivetrain.modules, self.followers):  # noqa: E501
-                if not follower.isFinished():
-                    output = follower.calculate(
-                        mod.drive_talon.getQuadraturePosition()
-                    )
+                    #
+                    init_time = self.start_timer.get()
+                    if init_time < 0.75:
+                        self.robot.lift.setLiftPower(-0.6)
+                        self.robot.drivetrain.set_all_module_angles(0)
+                    elif init_time < 1:
+                        self.robot.lift.setLiftPower(0)
+                        self.robot.drivetrain.set_all_module_angles(0)
+                        self.robot.drivetrain.set_all_module_speeds(250, True)
+                    elif init_time < 1.5:
+                        self.robot.drivetrain.set_all_module_angles(0)
+                        self.robot.drivetrain.set_all_module_speeds(-250, True)
+                    else:
+                        self.robot.drivetrain.set_all_module_angles(0)
+                        self.robot.drivetrain.set_all_module_speeds(0, True)
+                        self.startup_routine = False
+            elif (
+                not self.traj_finished
+                and self.timer.hasPeriodPassed(_trajectory_dt)
+            ):
+                self.traj_finished = True
+                for mod, follower in zip(self.robot.drivetrain.modules, self.followers):  # noqa: E501
+                    if not follower.isFinished():
+                        output = follower.calculate(
+                            mod.drive_talon.getQuadraturePosition()
+                        )
 
-                    angle = follower.getHeading()
+                        angle = follower.getHeading()
 
-                    mod.set_drive_percent_out(output)
-                    mod.set_steer_angle(angle)
+                        mod.set_drive_percent_out(output)
+                        mod.set_steer_angle(angle)
 
-                    self.traj_finished = False
-        elif self.traj_finished and self.eject_cube:
-            if not self.lift_timer_started:
-                self.lift_timer.reset()
-                self.lift_timer.start()
-                self.lift_timer_started = True
-            else:
-                if self.lift_timer.get() < 1.5:
-                    self.robot.lift.setLiftPower(-0.75)
-                elif self.lift_timer.get() < 4:
-                    self.robot.lift.setLiftPower(0)
-                    self.robot.claw.set_power(-0.75)  # eject cube
+                        self.traj_finished = False
+            elif self.traj_finished and self.eject_cube:
+                if not self.lift_timer_started:
+                    self.lift_timer.reset()
+                    self.lift_timer.start()
+                    self.lift_timer_started = True
                 else:
-                    self.robot.lift.setLiftPower(0)
-                    self.robot.claw.set_power(0)
+                    if self.lift_timer.get() < 1.5:
+                        self.robot.lift.setLiftPower(-0.4)
+                    elif self.lift_timer.get() < 4:
+                        self.robot.lift.setLiftPower(0)
+                        self.robot.claw.set_power(-0.5)  # eject cube
+                    else:
+                        self.robot.lift.setLiftPower(0)
+                        self.robot.claw.set_power(0)
+        except:  # noqa: E772
+            print(
+                "[auto] Caught exception in auto :periodic() - "
+                + str(sys.exc_info()[0])
+            )
+            self.robot.lift.setLiftPower(0)
+            self.robot.claw.set_power(0)
+            self.robot.drivetrain.set_all_module_angles(0)
+            self.robot.drivetrain.set_all_module_speeds(0, True)

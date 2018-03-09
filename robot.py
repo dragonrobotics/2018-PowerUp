@@ -3,9 +3,30 @@ import constants
 import swerve
 import lift
 import winch
+import sys
 from teleop import Teleop
 from autonomous.pathfinder_auto import Autonomous
 from sensors.imu import IMU
+
+
+def log(src, msg):
+    try:
+        print("[{:.3f}] [{}] {}".format(
+            wpilib.Timer.getMatchTime(), str(src), str(msg)
+        ))
+    except:  # noqa: E772
+        print("[{:.3f}] [log] Caught exception when logging: {} {}".format(
+            wpilib.Timer.getMatchTime(),
+            str(sys.exc_info()[0]),
+            str(sys.exc_info()[1])
+        ))
+
+
+def log_exception(src, locstr):
+    # i.e. caught {ValueError} {in my_method}: {could not cast X to Y}
+    log(src, "Caught {} {}: {}".format(
+        str(sys.exc_info()[0]), locstr, str(sys.exc_info[1])
+    ))
 
 
 class Robot(wpilib.IterativeRobot):
@@ -57,67 +78,148 @@ class Robot(wpilib.IterativeRobot):
         pass
 
     def disabledPeriodic(self):
-        self.lift.load_config_values()
-        self.drivetrain.load_config_values()
+        try:
+            self.lift.load_config_values()
+            self.drivetrain.load_config_values()
+        except:  # noqa: E772
+            log_exception('disabled', 'when loading config')
 
-        self.drivetrain.update_smart_dashboard()
-        self.imu.update_smart_dashboard()
-        self.lift.update_smart_dashboard()
-        self.winch.update_smart_dashboard()
+        try:
+            self.drivetrain.update_smart_dashboard()
+            self.imu.update_smart_dashboard()
+            self.lift.update_smart_dashboard()
+            self.winch.update_smart_dashboard()
 
-        wpilib.SmartDashboard.putNumber(
-            "Throttle Pos", self.throttle.getRawAxis(constants.liftAxis)
-        )
+            wpilib.SmartDashboard.putNumber(
+                "Throttle Pos", self.throttle.getRawAxis(constants.liftAxis)
+            )
+        except:  # noqa: E772
+            log_exception('disabled', 'when updating SmartDashboard')
 
-        self.lift.checkLimitSwitch()
+        try:
+            self.lift.checkLimitSwitch()
+        except:  # noqa: E772
+            log_exception('disabled', 'when checking lift limit switch')
 
     def autonomousInit(self):
-        self.drivetrain.load_config_values()
-        self.lift.load_config_values()
-
-        self.auto = Autonomous(self, self.autoPositionSelect.getSelected())
-        self.lift.checkLimitSwitch()
-
-    def autonomousPeriodic(self):
-        if self.sd_update_timer.hasPeriodPassed(0.5):
-            self.auto.update_smart_dashboard()
-            self.imu.update_smart_dashboard()
-            self.drivetrain.update_smart_dashboard()
-            self.lift.update_smart_dashboard()
-            self.winch.update_smart_dashboard()
-
-        self.auto.periodic()
-        self.lift.checkLimitSwitch()
-
-    def teleopInit(self):
-        self.teleop = Teleop(self)
-
-        self.drivetrain.load_config_values()
-        self.lift.load_config_values()
-        constants.load_control_config()
-
-        self.lift.checkLimitSwitch()
-
-    def teleopPeriodic(self):
-        self.teleop.drive()
-        self.teleop.buttons()
-        self.teleop.lift_control()
-        self.teleop.claw_control()
-        self.teleop.winch_control()
-
-        self.claw.update()
-        self.lift.checkLimitSwitch()
-
-        if self.sd_update_timer.hasPeriodPassed(0.5):
-            constants.load_control_config()
+        try:
             self.drivetrain.load_config_values()
             self.lift.load_config_values()
+        except:  # noqa: E772
+            log_exception('auto-init', 'when loading config')
 
-            self.drivetrain.update_smart_dashboard()
-            self.teleop.update_smart_dashboard()
-            self.imu.update_smart_dashboard()
-            self.lift.update_smart_dashboard()
-            self.winch.update_smart_dashboard()
+        autoPos = None
+        try:
+            autoPos = self.autoPositionSelect.getSelected()
+        except:  # noqa: E772
+            autoPos = None
+            log_exception('auto-init', 'when getting robot start position')
+
+        try:
+            self.auto = Autonomous(self, autoPos)
+        except:  # noqa: E772
+            log_exception('auto-init', 'in Autonomous constructor')
+
+        try:
+            self.lift.checkLimitSwitch()
+        except:  # noqa: E772
+            log_exception('auto-init', 'when checking lift limit switch')
+
+    def autonomousPeriodic(self):
+        try:
+            if self.sd_update_timer.hasPeriodPassed(0.5):
+                self.auto.update_smart_dashboard()
+                self.imu.update_smart_dashboard()
+                self.drivetrain.update_smart_dashboard()
+                self.lift.update_smart_dashboard()
+                self.winch.update_smart_dashboard()
+        except:  # noqa: E772
+            log_exception('auto', 'when updating SmartDashboard')
+
+        try:
+            self.auto.periodic()
+        except:  # noqa: E772
+            # Stop everything.
+            self.drivetrain.immediate_stop()
+            self.lift.setLiftPower(0)
+            self.claw.set_power(0)
+            self.winch.stop()
+            log_exception('auto', 'in auto :periodic()')
+
+        try:
+            self.lift.checkLimitSwitch()
+        except:  # noqa: E772
+            log_exception('auto', 'when checking lift limit switch')
+
+    def teleopInit(self):
+        try:
+            self.teleop = Teleop(self)
+        except:  # noqa: E772
+            log_exception('teleop-init', 'in Teleop constructor')
+
+        try:
+            self.drivetrain.load_config_values()
+            self.lift.load_config_values()
+            constants.load_control_config()
+        except:  # noqa: E772
+            log_exception('teleop-init', 'when loading config')
+
+        try:
+            self.lift.checkLimitSwitch()
+        except:  # noqa: E772
+            log_exception('teleop-init', 'when checking lift limit switch')
+
+    def teleopPeriodic(self):
+        try:
+            self.teleop.drive()
+        except:  # noqa: E772
+            log_exception('teleop', 'in drive control')
+            self.drivetrain.immediate_stop()
+
+        try:
+            self.teleop.buttons()
+        except:  # noqa: E772
+            log_exception('teleop', 'in button handler')
+
+        try:
+            self.teleop.lift_control()
+        except:  # noqa: E772
+            log_exception('teleop', 'in lift_control')
+            self.lift.setLiftPower(0)
+
+        try:
+            self.teleop.claw_control()
+        except:  # noqa: E772
+            log_exception('teleop', 'in claw_control')
+            self.claw.set_power(0)
+
+        try:
+            self.teleop.winch_control()
+        except:  # noqa: E772
+            log_exception('teleop', 'in winch_control')
+            self.winch.stop()
+
+        try:
+            self.lift.checkLimitSwitch()
+        except:  # noqa: E772
+            log_exception('teleop', 'in lift.checkLimitSwitch')
+
+        if self.sd_update_timer.hasPeriodPassed(0.5):
+            try:
+                constants.load_control_config()
+                self.drivetrain.load_config_values()
+                self.lift.load_config_values()
+            except:  # noqa: E772
+                log_exception('teleop', 'when loading config')
+
+            try:
+                self.drivetrain.update_smart_dashboard()
+                self.teleop.update_smart_dashboard()
+                self.imu.update_smart_dashboard()
+                self.lift.update_smart_dashboard()
+                self.winch.update_smart_dashboard()
+            except:  # noqa: E772
+                log_exception('teleop', 'when updating SmartDashboard')
 
 
 if __name__ == "__main__":

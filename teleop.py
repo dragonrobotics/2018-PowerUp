@@ -69,9 +69,11 @@ class Teleop:
         if constants.clawInv:
             clawPct *= -1
 
+        # NOTE: positive = in
+        # negative = out
         if abs(clawPct) < constants.claw_deadband:
             if self.claw_const_pressure_active:
-                clawPct = -0.1
+                clawPct = 0.1
             else:
                 clawPct = 0
         else:
