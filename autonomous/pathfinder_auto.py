@@ -182,7 +182,7 @@ class Autonomous:
         except:  # noqa: E722
             # Don't re-raise exceptions-- just note it and default to
             # something sane
-            print("[auto] Caught exception in auto trajectory decision logic: " + sys.exc_info()[0])  # noqa: E501
+            print("[auto] Caught exception in auto trajectory decision logic: " + str(sys.exc_info()[0]))  # noqa: E501
             target_trajectory = trajectories['straight-forward']
             self.eject_cube = False
 
