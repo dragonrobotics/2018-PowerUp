@@ -255,10 +255,8 @@ class Autonomous:
             and self.timer.hasPeriodPassed(_trajectory_dt)
         ):
             self.traj_finished = True
-            for i, follower in enumerate(self.followers):
+            for mod, follower in zip(self.robot.drivetrain.modules, self.followers):  # noqa: E501
                 if not follower.isFinished():
-                    mod = self.robot.drivetrain.modules[i]
-
                     output = follower.calculate(
                         mod.drive_talon.getQuadraturePosition()
                     )
