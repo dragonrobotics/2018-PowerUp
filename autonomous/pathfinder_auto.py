@@ -271,12 +271,13 @@ class Autonomous:
                     self.traj_finished = False
         elif self.traj_finished and self.eject_cube:
             if not self.lift_timer_started:
+                self.lift_timer.reset()
                 self.lift_timer.start()
                 self.lift_timer_started = True
             else:
-                if self.lift_timer.get() < 3.5:
-                    self.robot.lift.setLiftPower(-0.4)
-                elif self.lift_timer.get() < 5:
+                if self.lift_timer.get() < 1.5:
+                    self.robot.lift.setLiftPower(-0.75)
+                elif self.lift_timer.get() < 4:
                     self.robot.lift.setLiftPower(0)
                     self.robot.claw.set_power(-0.75)  # eject cube
                 else:
