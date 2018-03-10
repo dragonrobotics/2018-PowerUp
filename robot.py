@@ -5,27 +5,31 @@ import lift
 import winch
 import sys
 from teleop import Teleop
-from autonomous.pathfinder_auto import Autonomous
+from autonomous.baseline_simple import Autonomous
 from sensors.imu import IMU
 
 
 def log(src, msg):
     try:
-        print("[{:.3f}] [{}] {}".format(
+        full_msg = "[{:.3f}] [{}] {}".format(
             wpilib.Timer.getMatchTime(), str(src), str(msg)
-        ))
+        )
+
+        print(full_msg, file=sys.stderr)
     except:  # noqa: E772
-        print("[{:.3f}] [log] Caught exception when logging: {} {}".format(
+        full_msg = "[{:.3f}] [log] Caught exception when logging: {} {}".format(
             wpilib.Timer.getMatchTime(),
             str(sys.exc_info()[0]),
             str(sys.exc_info()[1])
-        ))
+        )
+        
+        print(full_msg, file=sys.stderr)
 
 
 def log_exception(src, locstr):
     # i.e. caught {ValueError} {in my_method}: {could not cast X to Y}
     log(src, "Caught {} {}: {}".format(
-        str(sys.exc_info()[0]), locstr, str(sys.exc_info[1])
+        str(sys.exc_info()[0]), locstr, str(sys.exc_info()[1])
     ))
 
 
@@ -36,7 +40,8 @@ class Robot(wpilib.IterativeRobot):
         wpilib.CameraServer.launch('driver_vision.py:main')
 
         self.autoPositionSelect = wpilib.SendableChooser()
-        self.autoPositionSelect.addDefault('Middle', 'Middle')
+        self.autoPositionSelect.addDefault('Middle-Baseline', 'Middle-Baseline')  # noqa: E501
+        self.autoPositionSelect.addObject('Middle-Placement', 'Middle-Placement')  # noqa: E501
         self.autoPositionSelect.addObject('Left', 'Left')
         self.autoPositionSelect.addObject('Right', 'Right')
 

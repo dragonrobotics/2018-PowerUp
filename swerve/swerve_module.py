@@ -16,6 +16,8 @@ _apply_range_hack = False
 _acceptable_steer_err_degrees = 1  # degrees
 _acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 
+_acceptable_drive_err = 50
+
 # Set to true to enable more SmartDashboard datalogging
 _enable_debug_dashboard_values = False
 
@@ -61,6 +63,9 @@ class SwerveModule(object):
 
         self.drive_talon.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0)  # noqa: E501
         self.drive_talon.setQuadraturePosition(0, 0)
+        self.drive_talon.configAllowableClosedloopError(
+            0, math.ceil(_acceptable_drive_err), 0
+        )
 
         self.name = name
         self.steer_target = 0

@@ -77,9 +77,9 @@ class Teleop:
             else:
                 clawPct = 0
         else:
-            if clawPct > constants.claw_deadband:
+            if clawPct < -constants.claw_deadband:
                 self.claw_const_pressure_active = False
-            elif clawPct < -constants.claw_deadband:
+            elif clawPct > constants.claw_deadband:
                 self.claw_const_pressure_active = True
 
         clawPct *= constants.claw_coeff

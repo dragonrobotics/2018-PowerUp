@@ -155,7 +155,7 @@ class Autonomous:
                     self.timer.get(), self.field_string
                 ))
 
-            if robot_position.lower() == 'middle':
+            if robot_position.lower() == 'middle-placement':
                 if len(self.field_string) == 0:
                     target_trajectory = trajectories['straight-forward']
                     print("[auto] Could not retrieve field string from FMS within timeout!")  # noqa: E501
@@ -170,6 +170,9 @@ class Autonomous:
                 else:
                     target_trajectory = trajectories['straight-forward']
                     print("[auto] Found unexpected data in field string: " + str(self.field_string))  # noqa: E501
+            elif robot_position.lower() == 'middle-baseline':
+                target_trajectory = trajectories['straight-forward']
+                print("[auto] Selected trajectory: Straight Forward")
             elif robot_position.lower() == 'left':
                 target_trajectory = trajectories['divert-left']
                 print("[auto] Selected trajectory: Divert Left")
@@ -209,8 +212,7 @@ class Autonomous:
             # current wheel position, ticks/rotation, wheel diameter in m
             module = robot.drivetrain.modules[i]
             follower.configureEncoder(
-                module.drive_talon.getQuadraturePosition(),
-                int(80 * 6.67), 4 * 0.0254
+                0, int(80 * 6.67), 4 * 0.0254
             )
 
             # in order:
@@ -240,16 +242,17 @@ class Autonomous:
                     if init_time < 0.75:
                         self.robot.lift.setLiftPower(-0.6)
                         self.robot.drivetrain.set_all_module_angles(0)
-                    elif init_time < 1:
+                    elif init_time < 0.75+1.5:
                         self.robot.lift.setLiftPower(0)
                         self.robot.drivetrain.set_all_module_angles(0)
                         self.robot.drivetrain.set_all_module_speeds(250, True)
-                    elif init_time < 1.5:
+                    elif init_time < (0.75+1.5)+1.5:
                         self.robot.drivetrain.set_all_module_angles(0)
                         self.robot.drivetrain.set_all_module_speeds(-250, True)
                     else:
                         self.robot.drivetrain.set_all_module_angles(0)
                         self.robot.drivetrain.set_all_module_speeds(0, True)
+                        self.robot.drivetrain.reset_drive_position()
                         self.startup_routine = False
             elif (
                 not self.traj_finished

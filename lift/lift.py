@@ -107,21 +107,7 @@ class ManualControlLift:
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
 
     def setLiftPower(self, power):
-        lower_disabled = False
-        if not self.bottom_limit_switch.get():
-            # bottom limit switch active:
-            if not self.lift_stop_timer_started:
-                self.lift_stop_timer_started = True
-                self.lift_stop_timer.reset()
-                self.lift_stop_timer.start()
-            elif self.lift_stop_timer.get() > 0.5:
-                lower_disabled = True
-        else:
-            self.lift_stop_timer_started = False
-            self.lift_stop_timer.reset()
-            self.lift_stop_timer.stop()
-
-        if power > 0 and not lower_disabled:
+        if power > 0 and not self.bottom_limit_switch.get():
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
         else:
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, power)
