@@ -117,3 +117,6 @@ docs/doctrees
 .deploy_cfg
 
 trajectory.pickle
+
+opkg_cache/
+pip_cache/
