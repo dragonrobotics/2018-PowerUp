@@ -1,6 +1,6 @@
 import wpilib
-import numpy as np
-from numpy import pi
+import sys
+
 
 class Autonomous:
     def __init__(self, robot, robot_position):

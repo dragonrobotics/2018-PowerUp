@@ -17,12 +17,12 @@ def log(src, msg):
 
         print(full_msg, file=sys.stderr)
     except:  # noqa: E772
-        full_msg = "[{:.3f}] [log] Caught exception when logging: {} {}".format(
+        full_msg = "[{:.3f}] [log] Caught exception when logging: {} {}".format(  # noqa: E501
             wpilib.Timer.getMatchTime(),
             str(sys.exc_info()[0]),
             str(sys.exc_info()[1])
         )
-        
+
         print(full_msg, file=sys.stderr)
 
 

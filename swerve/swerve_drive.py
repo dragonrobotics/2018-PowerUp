@@ -4,7 +4,6 @@ Implements a full swerve drive.
 import wpilib
 import math
 import numpy as np
-import csv
 from .swerve_module import SwerveModule
 
 
@@ -68,32 +67,6 @@ class SwerveDrive(object):
         # problems with the swerve drive sensors, and therefore practically all
         # autonomous code would fail to function properly anyways.
         self.fallback_to_pct_out = False
-
-        try:
-            self.drv_err_log= open('./drive_err.csv', 'w', newline='')
-            self.drv_err_writer = csv.writer(self.drv_err_log)
-            self.drv_err_writer.writerow(
-                ['Time', 'Match Time'] + [mod.name for mod in self.modules]
-            )
-
-            self.drv_tgt_log= open('./drive_target.csv', 'w', newline='')
-            self.drv_tgt_writer = csv.writer(self.drv_tgt_log)
-            self.drv_tgt_writer.writerow(
-                ['Time', 'Match Time'] + [mod.name for mod in self.modules]
-            )
-
-            self.drv_cnt_log= open('./drive_current.csv', 'w', newline='')
-            self.drv_cnt_writer = csv.writer(self.drv_cnt_log)
-            self.drv_cnt_writer.writerow(
-                ['Time', 'Match Time'] + [mod.name for mod in self.modules]
-            )
-        except:  # noqa: E772
-            self.drv_err_log = None
-            self.drv_err_writer = None
-            self.drv_tgt_log = None
-            self.drv_tgt_writer = None
-            self.drv_cnt_log = None
-            self.drv_cnt_writer = None
 
     def drive(self, forward, strafe, rotate_cw, max_wheel_speed=370):
         """
@@ -268,21 +241,3 @@ class SwerveDrive(object):
             'Overall Max Observed Speed',
             overall_max_speed
         )
-
-        try:
-            self.drv_err_writer.writerow(
-                [wpilib.Timer.getFPGATimestamp(), wpilib.Timer.getMatchTime()]
-                + [mod.drive_talon.getClosedLoopError(0) for mod in self.modules]  # noqa: E501
-            )
-
-            self.drv_tgt_writer.writerow(
-                [wpilib.Timer.getFPGATimestamp(), wpilib.Timer.getMatchTime()]
-                + [mod.drive_talon.getClosedLoopTarget(0) for mod in self.modules]  # noqa: E501
-            )
-
-            self.drv_cnt_writer.writerow(
-                [wpilib.Timer.getFPGATimestamp(), wpilib.Timer.getMatchTime()]
-                + [mod.drive_talon.getOutputCurrent() for mod in self.modules]  # noqa: E501
-            )
-        except:  # noqa: E772
-            pass

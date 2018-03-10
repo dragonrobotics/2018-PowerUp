@@ -207,10 +207,9 @@ class Autonomous:
 
         self.traj_finished = False
 
-        for i, follower in enumerate(self.followers):
+        for follower in self.followers:
             # in order:
             # current wheel position, ticks/rotation, wheel diameter in m
-            module = robot.drivetrain.modules[i]
             follower.configureEncoder(
                 0, int(80 * 6.67), 4 * 0.0254
             )
