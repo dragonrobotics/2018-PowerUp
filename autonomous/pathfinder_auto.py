@@ -141,7 +141,7 @@ class Autonomous:
             self.field_string = ''
             ds = wpilib.DriverStation.getInstance()
             while self.timer.get() < 1 and len(self.field_string) == 0:
-                fms_message = ds.getGameSpecificMessage()
+                fms_message = ds.getGameSpecificMessage().decode("utf-8")
                 if fms_message is None:
                     fms_message = ''
 
@@ -231,17 +231,20 @@ class Autonomous:
             else:
                 #
                 init_time = self.start_timer.get()
-                if init_time < 0.5:
+                if init_time < 0.75:
                     self.robot.lift.setLiftPower(-0.6)
-                    self.robot.drivetrain.set_all_module_speeds(150, True)
+                    self.robot.drivetrain.set_all_module_angles(0)
                 elif init_time < 1:
                     self.robot.lift.setLiftPower(0)
-                    self.robot.drivetrain.set_all_module_speeds(200, True)
+                    self.robot.drivetrain.set_all_module_angles(0)
+                    self.robot.drivetrain.set_all_module_speeds(250, True)
                 elif init_time < 1.5:
-                    self.robot.drivetrain.set_all_module_speeds(-200, True)
-                elif init_time > 1.5:
+                    self.robot.drivetrain.set_all_module_angles(0)
+                    self.robot.drivetrain.set_all_module_speeds(-250, True)
+                else:
+                    self.robot.drivetrain.set_all_module_angles(0)
                     self.robot.drivetrain.set_all_module_speeds(0, True)
-                    self.start_timer_started = False
+                    #self.start_timer_started = False
                     self.startup_routine = False
         elif (
             not self.traj_finished
