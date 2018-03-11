@@ -4,7 +4,7 @@ import swerve
 import lift
 import winch
 from teleop import Teleop
-from autonomous.fsm_auto import Autonomous
+from autonomous.pathfinder_auto import Autonomous
 from sensors.imu import IMU
 
 
