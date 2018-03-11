@@ -43,9 +43,11 @@ class Autonomous:
         except:  # noqa: E772
             self.drive_angle = 0
 
+        self.eject_cube = False
+
         if self.field_string != '':
             print("[auto] Got field string in {:.3f} ms: {}".format(
-                self.timer.get(), self.field_string*1000
+                self.timer.get()*1000, self.field_string
             ))
 
             # Set drive angle to zero if switch position matches robot position
@@ -54,8 +56,8 @@ class Autonomous:
                 or (self.field_string[0] == 'R' and self.robot_position == 'right')  # noqa: E501
                 or self.robot_position == 'middle-placement'
             ):
-                self.drive_angle = 0
                 self.drive_speed = 250
+                self.eject_cube = True
 
                 if self.robot_position == 'left':
                     self.drive_angle = math.radians(15)
@@ -75,7 +77,7 @@ class Autonomous:
                     self.drive_angle
                 ), file=sys.stderr)
 
-            print("[auto] Driving at speed={}".format(self.drive_speed))
+        print("[auto] Driving at speed={}".format(self.drive_speed))
 
         self.start_timer = wpilib.Timer()
         self.start_timer.reset()
@@ -100,15 +102,19 @@ class Autonomous:
                     )
 
                     if init_time < 0.5:
-                        self.robot.lift.setLiftPower(-0.2)
+                        self.robot.lift.setLiftPower(-0.1)
                     elif init_time < 0.5+4:
+                        self.robot.lift.setLiftPower(0)
                         self.robot.drivetrain.set_all_module_speeds(self.drive_speed, True)
                     elif init_time < 0.5+4+1.5:
-                        self.robot.lift.setLiftPower(-0.6)
+                        if self.eject_cube:
+                            self.robot.lift.setLiftPower(-0.3)
                         self.robot.drivetrain.set_all_module_speeds(0, True)
                     elif init_time < 0.5+4+1.5+1:
                         self.robot.lift.setLiftPower(0)
-                        self.robot.claw.set_power(-0.5)
+                        if self.eject_cube:
+                            self.robot.claw.set_power(-0.5)
+
                         self.robot.drivetrain.set_all_module_speeds(0, True)
                     else:
                         self.robot.lift.setLiftPower(0)
