@@ -153,7 +153,7 @@ class Autonomous:
                 ))
 
             if robot_position is None:
-                robot_position = 'was none'
+                robot_position = '[was None]'
 
             if robot_position.lower() == 'middle':
                 if len(self.field_string) == 0:
