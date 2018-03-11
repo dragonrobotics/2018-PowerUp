@@ -18,7 +18,7 @@ class Teleop:
 
         self.prefs = wpilib.Preferences.getInstance()
 
-        self.toggle_foc_button = ButtonDebouncer(self.stick, 7)
+        self.toggle_foc_button = ButtonDebouncer(self.stick, 2)
         self.zero_yaw_button = ButtonDebouncer(self.stick, 3)
         self.switch_camera_button = ButtonDebouncer(self.stick, 4)
         self.low_speed_button = ButtonDebouncer(self.stick, 9)

@@ -100,7 +100,7 @@ def load_control_config():
     )
 
     claw_coeff = __load_preference(
-        'Control: Claw Control Coefficient', backup=0.45
+        'Control: Claw Control Coefficient', backup=1.0
     )
 
     close_claw_on_lift_motion = __load_preference(

@@ -103,7 +103,7 @@ class ManualControlLift:
         else:
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
 
-    def setLiftPower(self, power):
+    def setLiftPower(self, power):        
         if power > 0 and not self.bottom_limit_switch.get():
             self.lift_main.set(TalonSRX.ControlMode.PercentOutput, 0)
         else:
