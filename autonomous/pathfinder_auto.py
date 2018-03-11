@@ -147,6 +147,11 @@ class Autonomous:
 
                 self.field_string = fms_message.upper()
 
+            if self.field_string != '':
+                print("[auto] Got field string in {:.3f} seconds: {}".format(
+                    self.timer.get(), self.field_string
+                ))
+
             if robot_position is None:
                 robot_position = 'was none'
 
