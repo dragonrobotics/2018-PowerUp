@@ -21,11 +21,15 @@ Individual `SwerveModule` instances support two major operations:
  * Set module drive speed
  * Set module steering
 
+### Swerve Module Driving
+
 The first operation (setting drive speeds) is relatively simple in concept:
 the commanded drive speeds are, for the most part, simply passed on to the drive
 motor controller unchanged; however, in certain cases the commanded speeds may
 be corrected to ensure that positive speed values always correspond to forward
 robot motion, relative to the direction the swerve module has been steered towards.
+
+### Swerve Module Steering
 
 The second operation (setting module steering) is somewhat more complicated.
 
@@ -69,3 +73,17 @@ quickly driving forwards and then backwards without any module rotations.
 After determining the final steering target angle, it is transformed into a
 target steering rotation sensor value, and this value is sent to the steering
 motor controller's internal position control loop.
+
+### Swerve Drive Control
+
+A swerve drive is a _holonomic_ drive: in other words, it is capable of
+_strafing_ (side to side) motion in addition to forward-back and turning motions.
+The `SwerveDrive.drive` method takes full advantage of this capability, computing
+steering angles and drive speeds from forward, strafe, and rotation speed parameters.
+
+The entire operation can be broken down into three parts:
+ * Computation of a translational velocity vector from forward (X-axis) and
+   strafe (Y-axis) velocities.
+ * Mixing of this translation vector with a vector perpendicular to each module's
+   chassis radius vector, dependent on the desired rotation speed.
+ * Computation of module drive speeds and steering angles from these vectors.
