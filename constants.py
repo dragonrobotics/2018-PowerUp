@@ -24,7 +24,7 @@ turn_sensitivity = 0.25
 lift_deadband = 0.25  # deadband
 lift_coeff = 0.20
 
-winch_slack = 8585
+winch_slack = 15568
 sync_power = 0.5
 
 claw_deadband = 0.1
@@ -85,7 +85,7 @@ def load_control_config():
     )
 
     winch_slack = __load_preference(
-        'Control: Winch Slack Distance', backup=-8585
+        'Control: Winch Slack Distance', backup=15568
     )
 
     sync_power = __load_preference(

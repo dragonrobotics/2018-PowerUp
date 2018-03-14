@@ -40,7 +40,7 @@ class Robot(wpilib.IterativeRobot):
         wpilib.CameraServer.launch('driver_vision.py:main')
 
         self.autoPositionSelect = wpilib.SendableChooser()
-        self.autoPositionSelect.addDefault('Middle-Baseline', 'Middle-Baseline')  # noqa: E501
+        self.autoPositionSelect.addDefault('Middle-Baseline', 'Middle-Baseline')
         self.autoPositionSelect.addObject('Middle-Placement', 'Middle-Placement')  # noqa: E501
         self.autoPositionSelect.addObject('Left', 'Left')
         self.autoPositionSelect.addObject('Right', 'Right')
@@ -113,15 +113,18 @@ class Robot(wpilib.IterativeRobot):
         except:  # noqa: E772
             log_exception('auto-init', 'when loading config')
 
-        autoPos = None
+        self.autoPos = None
         try:
-            autoPos = self.autoPositionSelect.getSelected()
+            self.autoPos = self.autoPositionSelect.getSelected()
         except:  # noqa: E772
-            autoPos = None
+            self.autoPos = None
             log_exception('auto-init', 'when getting robot start position')
 
         try:
-            self.auto = Autonomous(self, autoPos)
+            if self.autoPos is not None and self.autoPos != 'None':
+                self.auto = Autonomous(self, self.autoPos)
+            else:
+                log('auto-init', 'Disabling autonomous...')
         except:  # noqa: E772
             log_exception('auto-init', 'in Autonomous constructor')
 
@@ -142,7 +145,8 @@ class Robot(wpilib.IterativeRobot):
             log_exception('auto', 'when updating SmartDashboard')
 
         try:
-            self.auto.periodic()
+            if self.autoPos is not None and self.autoPos != 'None':
+                self.auto.periodic()
         except:  # noqa: E772
             # Stop everything.
             self.drivetrain.immediate_stop()

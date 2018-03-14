@@ -92,6 +92,7 @@ class Teleop:
                 < abs(constants.winch_slack)
             ):
                 self.robot.winch.forward()
+                self.robot.lift.setLiftPower(0)
             else:
                 self.robot.winch.forward()
                 self.robot.lift.setLiftPower(constants.sync_power)

@@ -120,3 +120,5 @@ trajectory.pickle
 
 opkg_cache/
 pip_cache/
+
+*.ignore
