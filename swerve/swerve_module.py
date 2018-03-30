@@ -19,7 +19,7 @@ _acceptable_steer_err = _acceptable_steer_err_degrees * (512 / 180)
 _acceptable_drive_err = 50
 
 # Set to true to enable more SmartDashboard datalogging
-_enable_debug_dashboard_values = False
+_enable_debug_dashboard_values = True
 
 
 class SwerveModule(object):

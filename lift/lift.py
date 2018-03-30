@@ -42,12 +42,16 @@ class ManualControlLift:
         self.bottom_limit_switch = wpilib.DigitalInput(bottom_limit_channel)
         self.start_limit_switch = wpilib.DigitalInput(start_lim_channel)
 
+        self.sustain =  -0.08
+
     def load_config_values(self):
         prefs = wpilib.Preferences.getInstance()
 
         phase = prefs.getBoolean("Lift: Invert Sensor Phase", True)
-        self.upper_limit = prefs.getInt("Lift: Upper Limit", None)
 
+        self.sustain = prefs.getFloat("Lift: Idle Sustain", -0.08)
+
+        self.upper_limit = prefs.getInt("Lift: Upper Limit", None)
         self.limits_enabled = prefs.getBoolean("Lift: Limits Enabled", False)
 
         if self.limits_enabled:

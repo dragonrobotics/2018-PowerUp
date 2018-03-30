@@ -70,7 +70,8 @@ class Robot(wpilib.IterativeRobot):
         self.throttle = wpilib.Joystick(1)
 
         self.claw = lift.Claw(
-            constants.claw_id
+            constants.claw_id,
+            constants.claw_follower_id
         )
 
         self.imu = IMU(wpilib.SPI.Port.kMXP)
@@ -103,8 +104,11 @@ class Robot(wpilib.IterativeRobot):
 
         try:
             self.lift.checkLimitSwitch()
+            pass
         except:  # noqa: E772
             log_exception('disabled', 'when checking lift limit switch')
+
+        self.drivetrain.update_smart_dashboard()
 
     def autonomousInit(self):
         try:
@@ -130,6 +134,7 @@ class Robot(wpilib.IterativeRobot):
 
         try:
             self.lift.checkLimitSwitch()
+            pass
         except:  # noqa: E772
             log_exception('auto-init', 'when checking lift limit switch')
 
@@ -157,6 +162,7 @@ class Robot(wpilib.IterativeRobot):
 
         try:
             self.lift.checkLimitSwitch()
+            pass
         except:  # noqa: E772
             log_exception('auto', 'when checking lift limit switch')
 
@@ -175,6 +181,7 @@ class Robot(wpilib.IterativeRobot):
 
         try:
             self.lift.checkLimitSwitch()
+            pass
         except:  # noqa: E772
             log_exception('teleop-init', 'when checking lift limit switch')
 
@@ -210,6 +217,7 @@ class Robot(wpilib.IterativeRobot):
 
         try:
             self.lift.checkLimitSwitch()
+            pass
         except:  # noqa: E772
             log_exception('teleop', 'in lift.checkLimitSwitch')
 
@@ -229,6 +237,9 @@ class Robot(wpilib.IterativeRobot):
                 self.winch.update_smart_dashboard()
             except:  # noqa: E772
                 log_exception('teleop', 'when updating SmartDashboard')
+        # for module in self.drivetrain.modules:
+        #     module.set_steer_angle(0)
+
 
 
 if __name__ == "__main__":

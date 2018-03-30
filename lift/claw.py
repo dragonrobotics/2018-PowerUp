@@ -36,7 +36,7 @@ class Claw:
     claw_movement_time = 0.5  #: time to allow for the claw to open, in seconds
     claw_adjust_time = 0.25
 
-    def __init__(self, talon_id):
+    def __init__(self, talon_id, follower_id):
         """
         Create a new instance of the claw subsystem.
 
@@ -45,6 +45,13 @@ class Claw:
         state.
         """
         self.talon = TalonSRX(talon_id)
+        self.follower = TalonSRX(follower_id)
+        self.follower.set(
+            TalonSRX.ControlMode.Follower,
+            talon_id
+        )
+        self.talon.setInverted(True)
+        self.follower.setInverted(False)
 
         # Forward limit switch = claw opening limit switch
         # self.talon.configForwardLimitSwitchSource(

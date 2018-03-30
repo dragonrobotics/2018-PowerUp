@@ -84,10 +84,10 @@ class SwerveDrive(object):
                 robot.
             rotate_cw (number): The desired rotational speed of the robot.
         """
-        a = strafe - (rotate_cw * (self.length / self.radius))
-        b = strafe + (rotate_cw * (self.length / self.radius))
-        c = forward - (rotate_cw * (self.width / self.radius))
-        d = forward + (rotate_cw * (self.width / self.radius))
+        a = (strafe - rotate_cw) * (self.length / self.radius)
+        b = (strafe + rotate_cw) * (self.length / self.radius)
+        c = (forward - rotate_cw) * (self.width / self.radius)
+        d = (forward + rotate_cw) * (self.width / self.radius)
 
         t1 = np.array([a, a, b, b])
         t2 = np.array([d, c, d, c])

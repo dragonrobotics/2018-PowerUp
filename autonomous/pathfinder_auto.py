@@ -21,13 +21,6 @@ _trajectory_dt = 0.05  # time in seconds between control updates
 _max_speed = 200 * 10 * (4 * pi) / (80 * 6.67) * 0.0254
 
 if wpilib.RobotBase.isSimulation():
-    def array_to_waypoint(arraylike):
-        return pf.Waypoint(
-            arraylike[0] * 0.0254,
-            arraylike[1] * 0.0254,
-            0
-        )
-
     # waypoint specification:
     # relative x, y coordinates in meters; exit angle in radians
 
@@ -46,15 +39,27 @@ if wpilib.RobotBase.isSimulation():
     align_pt_left = np.array((120, 164-54))
     align_pt_right = np.array((120, 164+54))
 
-    divert_pt_left = np.array((36, 48.5))
-    divert_pt_right = np.array((36, 279.5))
+    left_leg1 = (staging_mid - start_pos_middle) * 0.0254
+    left_leg2 = (align_pt_left - start_pos_middle) * 0.0254
+    left_leg3 = (left_switch - start_pos_middle) * 0.0254
+
+    right_leg1 = (align_pt_right - start_pos_middle) * 0.0254
+    right_leg2 = (right_switch - start_pos_middle) * 0.0254
+
+    ldiv_leg1 = (np.array((36, 48.5)) - start_pos_left) * 0.0254
+    ldiv_leg2 = (staging_left - start_pos_left) * 0.0254
+
+    rdiv_leg1 = (np.array((36, 279.5)) - start_pos_right) * 0.0254
+    rdiv_leg2 = (staging_right - start_pos_right) * 0.0254
+
+    straight_fwd1 = np.array((36, 0)) * 0.0254
+    straight_fwd2 = np.array((132, 0)) * 0.0254
 
     _, trajectories['left'] = pf.generate(
         [
-            array_to_waypoint(start_pos_middle),
-            array_to_waypoint(staging_mid),
-            array_to_waypoint(align_pt_left),
-            array_to_waypoint(left_switch),
+            pf.Waypoint(left_leg1[0], left_leg1[1], 0),
+            pf.Waypoint(left_leg2[0], left_leg2[1], 0),
+            pf.Waypoint(left_leg3[0], left_leg3[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -63,9 +68,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['divert-left'] = pf.generate(
         [
-            array_to_waypoint(start_pos_left),
-            array_to_waypoint(divert_pt_left),
-            array_to_waypoint(staging_left),
+            pf.Waypoint(ldiv_leg1[0], ldiv_leg1[1], 0),
+            pf.Waypoint(ldiv_leg2[0], ldiv_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -74,9 +78,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['right'] = pf.generate(
         [
-            array_to_waypoint(start_pos_middle),
-            array_to_waypoint(align_pt_right),
-            array_to_waypoint(right_switch)
+            pf.Waypoint(right_leg1[0], right_leg1[1], 0),
+            pf.Waypoint(right_leg2[0], right_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -85,9 +88,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['divert-right'] = pf.generate(
         [
-            array_to_waypoint(start_pos_right),
-            array_to_waypoint(divert_pt_right),
-            array_to_waypoint(staging_right)
+            pf.Waypoint(rdiv_leg1[0], rdiv_leg1[1], 0),
+            pf.Waypoint(rdiv_leg2[0], rdiv_leg2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,
@@ -96,8 +98,8 @@ if wpilib.RobotBase.isSimulation():
 
     _, trajectories['straight-forward'] = pf.generate(
         [
-            array_to_waypoint(np.array([0, 0]))
-            array_to_waypoint(np.array([132, 0]))
+            pf.Waypoint(straight_fwd1[0], straight_fwd1[1], 0),
+            pf.Waypoint(straight_fwd2[0], straight_fwd2[1], 0),
         ],
         pf.FIT_HERMITE_CUBIC,
         pf.SAMPLES_HIGH,

@@ -55,7 +55,8 @@ class Teleop:
             liftPct *= -1
 
         if abs(liftPct) < constants.lift_deadband:
-            liftPct = 0
+            self.robot.lift.setLiftPower(self.robot.lift.sustain)
+            return
 
         liftPct *= constants.lift_coeff
 
@@ -73,7 +74,7 @@ class Teleop:
         # negative = out
         if abs(clawPct) < constants.claw_deadband:
             if self.claw_const_pressure_active:
-                clawPct = 0.1
+                clawPct = .05
             else:
                 clawPct = 0
         else:
@@ -82,23 +83,38 @@ class Teleop:
             elif clawPct > constants.claw_deadband:
                 self.claw_const_pressure_active = True
 
-        clawPct *= constants.claw_coeff
+        if clawPct > 0:
+            clawPct *= constants.claw_in_coeff
+        else:
+            clawPct *= constants.claw_out_coeff
+
         self.robot.claw.set_power(clawPct)
 
     def winch_control(self):
-        if self.throttle.getRawButton(1):
-            if (
-                abs(self.robot.winch.talon.getSelectedSensorPosition(0))
-                < abs(constants.winch_slack)
-            ):
-                self.robot.winch.forward()
-                self.robot.lift.setLiftPower(0)
-            else:
-                self.robot.winch.forward()
-                self.robot.lift.setLiftPower(constants.sync_power)
-        elif self.throttle.getRawButton(3):
+        # if self.throttle.getRawButton(1):
+        #     if (
+        #         abs(self.robot.winch.talon.getSelectedSensorPosition(0))
+        #         < abs(constants.winch_slack)
+        #     ):
+        #         self.robot.winch.forward()
+        #         self.robot.lift.setLiftPower(0)
+        #     else:
+        #         self.robot.winch.forward()
+        #         self.robot.lift.setLiftPower(constants.sync_power)
+        # elif self.throttle.getRawButton(3):
+        #     self.robot.winch.forward()
+        # elif self.throttle.getRawButton(2):
+        #     self.robot.winch.reverse()
+        # else:
+        #     self.robot.winch.stop()
+
+        if self.throttle.getRawButton(3):
             self.robot.winch.forward()
-        elif self.throttle.getRawButton(2):
+            self.robot.lift.setLiftPower(0)
+        elif (
+            self.throttle.getRawButton(2) and not
+            wpilib.DriverStation.getInstance().isFMSAttached()
+        ):
             self.robot.winch.reverse()
         else:
             self.robot.winch.stop()

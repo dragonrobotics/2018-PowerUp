@@ -28,7 +28,8 @@ winch_slack = 15568
 sync_power = 0.5
 
 claw_deadband = 0.1
-claw_coeff = 0.35
+claw_in_coeff = 1.0
+claw_out_coeff = 0.3
 close_claw_on_lift_motion = False
 
 
@@ -58,8 +59,8 @@ def load_control_config():
     """
     global fwdAxis, fwdInv, strAxis, strInv, rcwAxis, rcwInv, teleop_speed
     global turn_sensitivity, liftAxis, liftInv, lift_deadband, lift_coeff
-    global winch_slack, close_claw_on_lift_motion, claw_deadband, claw_coeff
-    global clawAxis, clawInv, sync_power
+    global winch_slack, close_claw_on_lift_motion, claw_deadband, claw_in_coeff
+    global clawAxis, clawInv, sync_power, claw_out_coeff
 
     fwdAxis = __load_preference('Control: Forward-Backward Axis', backup=1)
     fwdInv = __load_preference('Control: Fwd-Bwd Axis Inverted', backup=True)
@@ -76,10 +77,10 @@ def load_control_config():
         'Control: Lift Control Deadband', backup=0.25
     )
     lift_coeff = __load_preference(
-        'Control: Lift Control Coefficient', backup=0.5
+        'Control: Lift Control Coefficient', backup=0.6
     )
 
-    teleop_speed = __load_preference('Control: Teleop Speed', backup=370)
+    teleop_speed = __load_preference('Control: Teleop Speed', backup=400)
     turn_sensitivity = __load_preference(
         'Control: Turn Sensitivity', backup=0.25
     )
@@ -99,8 +100,12 @@ def load_control_config():
         'Control: Claw Control Deadband', backup=0.1
     )
 
-    claw_coeff = __load_preference(
-        'Control: Claw Control Coefficient', backup=1.0
+    claw_in_coeff = __load_preference(
+        'Control: Claw Control Coefficient In', backup=1.0
+    )
+
+    claw_out_coeff = __load_preference(
+        'Control: Claw Control Coefficient Out', backup=0.3
     )
 
     close_claw_on_lift_motion = __load_preference(
@@ -120,14 +125,15 @@ swerve_config = [
 
 #: Lift motor contorller CAN IDs. Currently dummy values.
 lift_ids = {
-    'left': 31,
-    'right': 42
+    'left': 2,
+    'right': 3
 }
 lift_limit_channel = 0
 start_limit_channel = 1
 
 # Claw motor controller CAN ID(s).
-claw_id = 2
+claw_id = 12
+claw_follower_id = 13
 
 # The length of the chassis (units do not matter as long as they match)
 chassis_length = 23
@@ -136,4 +142,4 @@ chassis_length = 23
 chassis_width = 27
 
 # Winch Motor CAN ID
-winch_id = 35
+winch_id = 1
